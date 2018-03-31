@@ -9,7 +9,7 @@ colorBoundary = {'lower_white': np.array([0, 0, 240]),
                  'upper_yellow': np.array([60, 255, 255]),
                  #'lower_yellow': np.array([15, 139, 132]),
                  #'upper_yellow': np.array([75, 255, 198]),
-                 'lower_red': np.array([136, 87, 111]),
+                 'lower_red': np.array([160, 100, 111]),
                  'upper_red': np.array([180, 255, 255])}
 
 
@@ -66,7 +66,7 @@ def traceBall(color, frame):
     for pic, contour in enumerate(contours):
         area = cv2.contourArea(contour)
 
-        if area > 70:
+        if 200 > area > 70:
             x, y, w, h = cv2.boundingRect(contour)
             centerX = int(x + w / 2)
             centerY = int(y + h / 2)
@@ -91,16 +91,7 @@ def traceBall(color, frame):
         pre = queue[color][0]
         queue[color].appendleft((int(centerX), int(centerY)))
 
-
-        '''
-        if color == 'yellow':
-            rSide.appendleft((int(x + w), int(centerY)))
-            lSide.appendleft((int(x), int(centerY)))
-        #queue[color].append((int(centerX), int(centerY)))
-        '''
-
-
-        rM = getDistance(pre[0], pre[1], centerX, centerY)
+        rM = getDistance(pre[0], pre[1], centerX, centerY)*100
 
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
         cv2.putText(frame, color, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255))

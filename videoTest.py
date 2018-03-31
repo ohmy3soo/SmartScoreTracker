@@ -8,16 +8,22 @@ from collections import deque
 
 pw = 18
 ph = 16
+
 def drawLines(img):
     cv2.line(img, (pw, ph), (img.shape[1]-pw, ph), (0,0,255), 1)
     cv2.line(img, (img.shape[1]-pw, ph), (img.shape[1]-pw, img.shape[0]-ph), (0, 0, 255), 1)
     cv2.line(img, (img.shape[1]-pw, img.shape[0]-ph), (pw, img.shape[0]-ph), (0, 0, 255), 1)
     cv2.line(img, (pw, img.shape[0]-ph), (pw, ph), (0, 0, 255), 1)
 
+BGRcolor = {"red":(0,0,255),
+            "yellow":(0,255,255),
+            "white":(255,255,255),
+            "green":(0,255,0),
+            "blue":(255,0,0) }
 
 join = []
 
-camera = cv2.VideoCapture("/Users/kihunahn/Desktop/videoSrc/1.mp4")
+camera = cv2.VideoCapture("/Users/kihunahn/Desktop/videoSrc/2.mp4")
 ret, img = camera.read()
 img = imutils.resize(img, width=600)
 
@@ -25,13 +31,16 @@ billiardFunction.setMatrix(img)
 s = []
 
 
+stopCounter_p1 = 10
+stopCounter_p2 = 10
+stopCounter_r = 10
+stopBuffer = 1
+
+
 def getDistance(o1, o2):
     return math.sqrt((o1[0]-o2[0])**2 + (o1[1]-o2[1])**2)
 
 
-
-measurements = []
-predictions = []
 '''
 last_measurement = current_measurement = np.array((2,1), np.float32)
 last_prediction = current_prediction = np.zeros((2,1), np.float32)
@@ -47,23 +56,49 @@ last_measurement = deque()
 
 #pre_dx = 0
 #dx = 0
-def KF(frame, x,y):
-    global pre_dx, dx
+def KF(frame, x,y, p1, draw=True):
     global current_measurement, measurements, last_measurement, current_prediction, last_prediction
-    #print("KF: ", x, y)
 
-    '''
-    if len(ballInfo.yellowQ) > 2:
-        pre_dx = ballInfo.yellowQ[2][0] - ballInfo.yellowQ[1][0]
-        dx = ballInfo.yellowQ[1][0] - ballInfo.yellowQ[0][0]
+    if len(last_prediction) > 2:
+            pre_dy = ballInfo.yellowQ[2][1] - ballInfo.yellowQ[1][1]
+            dy = ballInfo.yellowQ[1][1] - ballInfo.yellowQ[0][1]
 
-    direction = pre_dx * dx
-    if direction < 0:
-        print(direction)
+            directionY = pre_dy * dy
+            if directionY <= 0 and last_prediction[0][1] > height - ph:
+                if 'B' not in join:
+                    join.append('B')
+                    s.append('Edge')
+            elif 'B' in join and last_prediction[0][1] <= height - ph:
+                join.remove('B')
 
-    '''
+            if directionY <= 0 and last_prediction[0][1] <= ph:
+                if 'U' not in join:
+                    join.append('U')
+                    s.append('Edge')
+            elif 'U' in join:
+                join.remove('U')
 
-    # 마우스 이벤트를 통해 새로 들어온 정보로 (x,y) 생성
+            pre_dx = ballInfo.yellowQ[2][0] - ballInfo.yellowQ[1][0]
+            dx = ballInfo.yellowQ[1][0] - ballInfo.yellowQ[0][0]
+            directionX = pre_dx * dx
+            if directionX <= 0 and last_prediction[0][0] <= pw:
+                if 'L' not in join:
+                    join.append('L')
+                    s.append('Edge')
+                    # print('B')
+            elif 'L' in join:
+                join.remove('L')
+
+            if directionX <= 0 and last_prediction[0][0] >= width - pw:
+                if 'R' not in join:
+                    join.append('R')
+                    s.append('Edge')
+                    # print('B')
+            elif 'R' in join:
+                join.remove('R')
+            
+
+
     current_measurement = np.array([[np.float32(x)], [np.float32(y)]])
 
     # 방금 들어온 자료를 correct, predict
@@ -82,10 +117,18 @@ def KF(frame, x,y):
     cpx, cpy = current_prediction[0], current_prediction[1]
     '''
 
+    '''
+    lpx, lpy = last_prediction[0][0:2]
+    lmx, lmy = last_measurement[0]
+    #print(lpx, lpy)
+    #print(lmx, lmy)
+    if lpx == lmx and lpy == lmy:
+        print("oh")
     # 점 이어서 선 그리기
     if ballInfo.yellowQ[0][0] < width - pw and current_prediction[0] > width - pw:
         print("www")
         s.append("EdgeR")
+    '''
 
     if len(last_prediction) >= 2:
         #print(len(last_prediction))
@@ -98,14 +141,14 @@ def KF(frame, x,y):
             cv2.line(frame, (last_measurement[i][0], last_measurement[i][1]),
                      (last_measurement[i-1][0], last_measurement[i-1][1]), (0, 255, 0), 1)
 
-            cv2.line(frame, (last_prediction[i][0], last_prediction[i][1]),
-                     (last_prediction[i-1][0], last_prediction[i-1][1]), (255, 255, 0), 1)
+            #cv2.line(frame, (last_prediction[i][0], last_prediction[i][1]),
+            #         (last_prediction[i-1][0], last_prediction[i-1][1]), (255, 255, 0), 1)
 
 
 kalman = cv2.KalmanFilter(4,2,1)
 kalman.measurementMatrix = np.array([[1,0,0,0],[0,1,0,0]],np.float32)
 kalman.transitionMatrix = np.array([[1,0,1,0],[0,1,0,1],[0,0,1,0],[0,0,0,1]],np.float32)
-kalman.processNoiseCov = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]],np.float32)*2
+kalman.processNoiseCov = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]],np.float32)*0.03
 
 
 
@@ -114,7 +157,18 @@ p2 = 'white'
 r = 'red'
 success = False
 
+rV_pre = p1V_pre = p2V_pre = 0
+
 while True:
+
+    '''
+    
+    '''
+    p1 = 'yellow'
+    p2 = 'white'
+    r = 'red'
+
+
 
     ret, img = camera.read()
     img = imutils.resize(img, width=600)
@@ -123,9 +177,9 @@ while True:
     width = frame.shape[1]
     height = frame.shape[0]
 
-    rV = ballInfo.traceBall('red', frame)
-    yV = ballInfo.traceBall('yellow', frame)
-    wV = ballInfo.traceBall('white', frame)
+    rV = ballInfo.traceBall(r, frame)
+    p1V = ballInfo.traceBall(p1, frame)
+    p2V = ballInfo.traceBall(p2, frame)
 
     p1_p2 = getDistance(ballInfo.queue[p1][0], ballInfo.queue[p2][0])
     p1_r = getDistance(ballInfo.queue[p1][0], ballInfo.queue[r][0])
@@ -162,43 +216,23 @@ while True:
         join.remove(r)
 
 
+
     cX, cY = ballInfo.queue[p1][0]
-    if "EdgeL" not in join and cX <= pw:
-        #print('Touch Left Edge')
-        s.append("Edge")
-        join.append("EdgeL")
-    if "EdgeL" in join and cX > pw:
-        join.remove("EdgeL")
 
-    if "EdgeR" not in join and cX >= width - pw:
-        #print('Touch Right Edge')
-        s.append("Edge")
-        join.append("EdgeR")
-    if "EdgeR" in join and cX < width - pw:
-        join.remove("EdgeR")
-
-    if "EdgeU" not in join and cY <= ph:
-        #print('Touch Upper Edge')
-        s.append("Edge")
-        join.append("EdgeU")
-    if "EdgeU" in join and cY > ph:
-        join.remove("EdgeU")
-
-    if "EdgeB" not in join and cY >= height - ph:
-        #print('Touch Bottom Edge')
-        s.append("Edge")
-        join.append("EdgeB")
-    if "EdgeB" in join and cY < height - ph:
-        join.remove("EdgeB")
-
-    if yV == 0 and rV == 0 and wV == 0:
+    #if p1V == 0 and rV == 0 and p2V == 0 and p1V_pre ==0 and rV_pre ==0 and p2V_pre ==0:
+    if stopCounter_p1 > stopBuffer and stopCounter_p2 > stopBuffer and stopCounter_r > stopBuffer:
+        KF(frame, cX, cY, p1, draw=False)
         if not success and s != []:
             temp = p1
             p1 = p2
             p2 = temp
         success = False
+        join.clear()
         #print('stop')
         s.clear()
+
+    else:
+        KF(frame, cX, cY, p1, draw=True)
 
     '''
     if len(ballInfo.queue['white']) >= 2:
@@ -207,20 +241,50 @@ while True:
                     (ballInfo.queue['white'][i-1][0], ballInfo.queue['white'][i-1][1]), (0, 0, 255), 1)
     '''
 
-    e2 = cv2.getTickCount()
-
     drawLines(frame)
 
+    cv2.putText(frame, p1, (100, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.7, BGRcolor[p1])
+    cv2.putText(frame, str(s), (100, 130), cv2.FONT_HERSHEY_SIMPLEX, 0.5, BGRcolor[p1])
 
-    ##################################################
-    #if yX != 0 and yY != 0:
-    #KF(frame, cX, cY)
-    ##################################################
-    cv2.putText(frame, p1, (100, 100), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 255))
+
+    if p1V != 0:
+        stopCounter_p1 = 0
+    else:
+        stopCounter_p1 += 1
+
+    if p2V != 0:
+        stopCounter_p2 = 0
+    else:
+        stopCounter_p2 += 1
+
+    if rV != 0:
+        stopCounter_r = 0
+    else:
+        stopCounter_r += 1
+
+
+    if stopCounter_p1 > stopBuffer:
+        cv2.circle(frame, (550, 280), 5, BGRcolor[p1], thickness=1)
+    else:
+        cv2.circle(frame, (550, 280), 3, BGRcolor[p1], thickness=3)
+    if stopCounter_p2 > stopBuffer:
+        cv2.circle(frame, (565, 280), 5, BGRcolor[p2], thickness=1)
+    else:
+        cv2.circle(frame, (565, 280), 3, BGRcolor[p2], thickness=3)
+    if stopCounter_r > stopBuffer:
+        cv2.circle(frame, (580, 280), 5, BGRcolor[r], thickness=1)
+    else:
+        cv2.circle(frame, (580, 280), 3, BGRcolor[r], thickness=3)
+
+    #print(wV)
     cv2.imshow('frame', frame)
+    rV_pre = rV
+    p1V_pre = p1V
+    p2V_pre = p2V
     #out.write(frame)
-    print(s)
-    #print(join)
+    #print(s)
+    #if join != []:
+    #    print(join)
     if (cv2.waitKey(1) & 0xFF) == ord('q'): # Hit `q` to exit
         break
 
