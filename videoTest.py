@@ -23,7 +23,7 @@ BGRcolor = {"red":(0,0,255),
 
 join = []
 
-camera = cv2.VideoCapture("/Users/kihunahn/Desktop/videoSrc/2.mp4")
+camera = cv2.VideoCapture("/Users/kihunahn/Desktop/videoSrc/1.mp4")
 ret, img = camera.read()
 img = imutils.resize(img, width=600)
 
@@ -54,9 +54,7 @@ last_measurement = deque()
 #last_prediction.appendleft(current_prediction)
 
 
-#pre_dx = 0
-#dx = 0
-def KF(frame, x,y, p1, draw=True):
+def KF(frame, x,y, draw=True):
     global current_measurement, measurements, last_measurement, current_prediction, last_prediction
 
     if len(last_prediction) > 2:
@@ -96,8 +94,6 @@ def KF(frame, x,y, p1, draw=True):
                     # print('B')
             elif 'R' in join:
                 join.remove('R')
-            
-
 
     current_measurement = np.array([[np.float32(x)], [np.float32(y)]])
 
@@ -184,7 +180,54 @@ while True:
     p1_p2 = getDistance(ballInfo.queue[p1][0], ballInfo.queue[p2][0])
     p1_r = getDistance(ballInfo.queue[p1][0], ballInfo.queue[r][0])
 
+    '''
+    
+    
+    '''
+
+
+
+    cX, cY = ballInfo.queue[p1][0]
+
+    #if p1V == 0 and rV == 0 and p2V == 0 and p1V_pre ==0 and rV_pre ==0 and p2V_pre ==0:
+    if stopCounter_p1 > stopBuffer and stopCounter_p2 > stopBuffer and stopCounter_r > stopBuffer:
+        KF(frame, cX, cY, draw=False)
+        if not success and s != []:
+            temp = p1
+            p1 = p2
+            p2 = temp
+        success = False
+        join.clear()
+        #print('stop')
+        s.clear()
+
+    else:
+        KF(frame, cX, cY, draw=True)
+
+    '''
+    if len(ballInfo.queue['white']) >= 2:
+        for i in range(1, len(ballInfo.queue['white'])):
+            cv2.line(frame, (ballInfo.queue['white'][i][0], ballInfo.queue['white'][i][1]),
+                    (ballInfo.queue['white'][i-1][0], ballInfo.queue['white'][i-1][1]), (0, 0, 255), 1)
+    '''
+
+    tempR_p1_p2 = (ballInfo.radius[p1] + ballInfo.radius[p2]) * 1.5
+    IP1 = (last_prediction[0][0] - last_measurement[0][0]) * (last_prediction[0][0] - last_measurement[0][0]) \
+          + (ballInfo.queue[p2][1][0] - ballInfo.queue[p2][0][0]) * (ballInfo.queue[p2][1][1] - ballInfo.queue[p2][0][1])
+
     if p2 not in join and p1_p2 <= (ballInfo.radius[p1] + ballInfo.radius[p2]) * 1.15:
+        join.append(p2)
+        s.append(p2)
+        if not success and r in s:
+            if s.count('Edge') >= 3:
+                print("GET SCORE")
+                success = True
+            else:
+                s = []
+                s.append(p2)
+
+    elif p2 not in join and tempR_p1_p2 >= getDistance(ballInfo.queue[p1][0], ballInfo.queue[p2][0]) and IP1 > 0:
+        print("1!!")
         join.append(p2)
         s.append(p2)
         if not success and r in s:
@@ -199,6 +242,11 @@ while True:
         #print(p2, "ball is detached")
         join.remove(p2)
 
+
+
+    tempR_p1_r = (ballInfo.radius[p1] + ballInfo.radius[r]) * 1.5
+    IP2 = (last_prediction[0][0] - last_measurement[0][0]) * (last_prediction[0][0] - last_measurement[0][0]) \
+          + (ballInfo.queue[r][1][0] - ballInfo.queue[r][0][0]) * (ballInfo.queue[r][1][1] - ballInfo.queue[r][0][1])
     if r not in join and p1_r <= (ballInfo.radius[p1] + ballInfo.radius[r]) * 1.15:
         join.append(r)
         s.append(r)
@@ -210,38 +258,33 @@ while True:
             else:
                 s = [];
                 s.append(r)
-
+    elif r not in join and tempR_p1_r >= getDistance(ballInfo.queue[p1][0], ballInfo.queue[r][0]) and IP2 > 0:
+        print("2!!")
+        join.append(r)
+        s.append(r)
+        if not success and p2 in s:
+            if s.count('Edge') >= 3:
+                print("GET SCORE")
+                success = True
+            else:
+                s = []
+                s.append(r)
     elif r in join and p1_r > (ballInfo.radius[p1] + ballInfo.radius[r]) * 1.15:
         #print("Red ball is detached")
         join.remove(r)
 
 
 
-    cX, cY = ballInfo.queue[p1][0]
 
-    #if p1V == 0 and rV == 0 and p2V == 0 and p1V_pre ==0 and rV_pre ==0 and p2V_pre ==0:
-    if stopCounter_p1 > stopBuffer and stopCounter_p2 > stopBuffer and stopCounter_r > stopBuffer:
-        KF(frame, cX, cY, p1, draw=False)
-        if not success and s != []:
-            temp = p1
-            p1 = p2
-            p2 = temp
-        success = False
-        join.clear()
-        #print('stop')
-        s.clear()
 
-    else:
-        KF(frame, cX, cY, p1, draw=True)
 
-    '''
-    if len(ballInfo.queue['white']) >= 2:
-        for i in range(1, len(ballInfo.queue['white'])):
-            cv2.line(frame, (ballInfo.queue['white'][i][0], ballInfo.queue['white'][i][1]),
-                    (ballInfo.queue['white'][i-1][0], ballInfo.queue['white'][i-1][1]), (0, 0, 255), 1)
-    '''
+
+
 
     drawLines(frame)
+
+    cv2.line(img, (pw, ph), (img.shape[1] - pw, ph), (0, 0, 255), 1)
+    cv2.line(img, (pw, ph), (img.shape[1] - pw, ph), (0, 0, 255), 1)
 
     cv2.putText(frame, p1, (100, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.7, BGRcolor[p1])
     cv2.putText(frame, str(s), (100, 130), cv2.FONT_HERSHEY_SIMPLEX, 0.5, BGRcolor[p1])
