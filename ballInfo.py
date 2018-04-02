@@ -91,10 +91,10 @@ def traceBall(color, frame):
         pre = queue[color][0]
         queue[color].appendleft((int(centerX), int(centerY)))
 
-        rM = getDistance(pre[0], pre[1], centerX, centerY)*100
+        rM = getDistance(pre[0], pre[1], centerX, centerY)
 
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
         cv2.putText(frame, color, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255))
-        return rM
+        return rM * 10
 
     return -1
