@@ -146,12 +146,17 @@ while True:
     img = imutils.resize(img, width=600)
 
     frame = billiardFunction.getWarp(img)
+    #cv2.imshow("before", frame)
+    #kernel = np.ones((3,3), np.uint8)
+    #frame = cv2.morphologyEx(frame, cv2.MORPH_CLOSE, kernel)
+    #cv2.imshow("after", frame)
     width = frame.shape[1]
     height = frame.shape[0]
 
     rV = ballInfo.traceBall(r, frame)
     p1V = ballInfo.traceBall(p1, frame)
     p2V = ballInfo.traceBall(p2, frame)
+
 
     p1_p2 = getDistance(ballInfo.queue[p1][0], ballInfo.queue[p2][0])
     p1_r = getDistance(ballInfo.queue[p1][0], ballInfo.queue[r][0])
@@ -174,7 +179,7 @@ while True:
             s.clear()
 
 
-    if p1V > 30:
+    if p1V > 2:
         start = True
         end = False
     '''
@@ -264,18 +269,21 @@ while True:
     if end:
         cv2.putText(frame, 'End', (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, BGRcolor[p1])
 
-    if p1V != 0:
+    if p1V > 1:
         stopCounter_p1 = 0
+        print(p1V)
     else:
         stopCounter_p1 += 1
 
-    if p2V != 0:
+    if p2V > 1:
         stopCounter_p2 = 0
+        print(p2V)
     else:
         stopCounter_p2 += 1
 
-    if rV != 0:
+    if rV > 1:
         stopCounter_r = 0
+        print(rV)
     else:
         stopCounter_r += 1
 
