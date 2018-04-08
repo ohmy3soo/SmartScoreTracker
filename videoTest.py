@@ -126,37 +126,6 @@ kalman.processNoiseCov = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]],np.f
 
 
 
-
-
-def KF(frame, x,y, draw=True):
-    global current_measurement, measurements, last_measurement, current_prediction, last_prediction
-
-    current_measurement = np.array([[np.float32(x)], [np.float32(y)]])
-
-    kalman.correct(current_measurement)
-    current_prediction = kalman.predict()
-
-    last_prediction.appendleft(current_prediction)
-    last_measurement.appendleft(current_measurement)
-    '''
-    if len(last_prediction) >= 2:
-        for i in range(1, len(last_measurement)):
-            cv2.line(frame, (last_measurement[i][0], last_measurement[i][1]),
-                     (last_measurement[i-1][0], last_measurement[i-1][1]), (0, 255, 0), 1)
-
-            cv2.line(frame, (last_prediction[i][0], last_prediction[i][1]),
-                     (last_prediction[i-1][0], last_prediction[i-1][1]), (255, 255, 0), 1)
-
-    '''
-kalman2 = cv2.KalmanFilter(4,2,1)
-kalman2.measurementMatrix = np.array([[1,0,0,0],[0,1,0,0]],np.float32)
-kalman2.transitionMatrix = np.array([[1,0,1,0],[0,1,0,1],[0,0,1,0],[0,0,0,1]],np.float32)
-kalman2.processNoiseCov = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]],np.float32)*0.03
-
-
-
-
-
 p1 = 'yellow'
 p2 = 'white'
 r = 'red'
@@ -165,7 +134,6 @@ success = False
 start = False
 end = True
 
-rV_pre = p1V_pre = p2V_pre = 0
 
 while True:
     '''
@@ -196,7 +164,6 @@ while True:
     cX, cY = ballInfo.queue[p1][0]
     KF(frame, cX, cY, draw=False)
 
-    #if p1V == 0 and rV == 0 and p2V == 0 and p1V_pre ==0 and rV_pre ==0 and p2V_pre ==0:
     if stopCounter_p1 > stopBuffer and stopCounter_p2 > stopBuffer and stopCounter_r > stopBuffer:
         if start:
             if not success:
@@ -207,7 +174,7 @@ while True:
             start = False
             join.clear()
             print('stop')
-            s.clear()
+            s = []
 
 
     if p1V > 2:
@@ -220,10 +187,10 @@ while True:
                     (ballInfo.queue['white'][i-1][0], ballInfo.queue['white'][i-1][1]), (0, 0, 255), 1)
     '''
 
-    tempR_p1_p2 = (ballInfo.radius[p1] + ballInfo.radius[p2]) * 1.5
+    tempR_p1_p2 = (ballInfo.radius[p1] + ballInfo.radius[p2]) * 1.2
     IP1 = (last_prediction[0][0] - last_measurement[0][0]) * (last_prediction[0][0] - last_measurement[0][0]) \
           + (ballInfo.queue[p2][1][0] - ballInfo.queue[p2][0][0]) * (ballInfo.queue[p2][1][1] - ballInfo.queue[p2][0][1])
-
+    #print("WHTIE: ", IP1)
     if p2 not in join and p1_p2 <= (ballInfo.radius[p1] + ballInfo.radius[p2]) * 1.05 and p2V != 0:
         join.append(p2)
         s.append(p2)
@@ -236,7 +203,7 @@ while True:
                 s = []
                 s.append(p2)
 
-    elif p2 not in join and tempR_p1_p2 >= getDistance(ballInfo.queue[p1][0], ballInfo.queue[p2][0]) and IP1 > 0:
+    elif p2 not in join and tempR_p1_p2 >= getDistance(ballInfo.queue[p1][0], ballInfo.queue[p2][0]):# and IP1 > 0:
         print("IP1!!")
         join.append(p2)
         s.append(p2)
@@ -253,9 +220,10 @@ while True:
         join.remove(p2)
 
 
-    tempR_p1_r = (ballInfo.radius[p1] + ballInfo.radius[r]) * 1.5
+    tempR_p1_r = (ballInfo.radius[p1] + ballInfo.radius[r]) * 1.2
     IP2 = (last_prediction[0][0] - last_measurement[0][0]) * (last_prediction[0][0] - last_measurement[0][0]) \
           + (ballInfo.queue[r][1][0] - ballInfo.queue[r][0][0]) * (ballInfo.queue[r][1][1] - ballInfo.queue[r][0][1])
+    #print("RED: ", IP2)
     if r not in join and p1_r <= (ballInfo.radius[p1] + ballInfo.radius[r]) * 1.05 and rV !=0:
         join.append(r)
         s.append(r)
@@ -268,7 +236,7 @@ while True:
             else:
                 s = [];
                 s.append(r)
-    elif r not in join and tempR_p1_r >= getDistance(ballInfo.queue[p1][0], ballInfo.queue[r][0]) and IP2 > 0:
+    elif r not in join and tempR_p1_r >= getDistance(ballInfo.queue[p1][0], ballInfo.queue[r][0]):# and IP2 > 0:
         print("IP2!!")
         join.append(r)
         s.append(r)
@@ -284,7 +252,10 @@ while True:
         join.remove(r)
 
 
-
+    #if IP1 < 0:
+    #    print('IP1: ', IP1)
+    if IP2 < 0:
+        print('IP2: ', IP2)
 
 
     drawLines(frame)
@@ -302,19 +273,16 @@ while True:
 
     if p1V > 1:
         stopCounter_p1 = 0
-        print(p1V)
     else:
         stopCounter_p1 += 1
 
     if p2V > 1:
         stopCounter_p2 = 0
-        print(p2V)
     else:
         stopCounter_p2 += 1
 
     if rV > 1:
         stopCounter_r = 0
-        print(rV)
     else:
         stopCounter_r += 1
 
@@ -334,9 +302,6 @@ while True:
 
     #print(wV)
     cv2.imshow('frame', frame)
-    rV_pre = rV
-    p1V_pre = p1V
-    p2V_pre = p2V
     #out.write(frame)
     #print(s)
     #if join != []:
