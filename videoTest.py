@@ -53,10 +53,12 @@ last_measurement = deque()
 #last_measurement.appendleft(current_measurement)
 #last_prediction.appendleft(current_prediction)
 
-
+IP1 = 0
+b1 = 0
+b2 = 0
 def KF(frame, x,y, draw=True):
-    global current_measurement, measurements, last_measurement, current_prediction, last_prediction
-
+    global current_measurement, measurements, last_measurement, current_prediction, last_prediction , IP1
+    global b1, b2
 
     if len(last_prediction) > 2:
             pre_dy = ballInfo.yellowQ[2][1] - ballInfo.yellowQ[1][1]
@@ -104,16 +106,20 @@ def KF(frame, x,y, draw=True):
 
 
 
-            x1 = x - last_prediction[1][0]
-            y1 = y - last_prediction[1][1]
+            x1 = x - last_prediction[0][0]
+            y1 = y - last_prediction[0][1]
 
             x2 = ballInfo.queue[p2][0][0] - ballInfo.queue[p2][1][0]
             y2 = ballInfo.queue[p2][0][1] - ballInfo.queue[p2][1][1]
 
             IP1 = (x1 * x2 + y1 * y2) /( (((x1 ** 2) + (y1 ** 2)) ** 0.5) * (((x2 ** 2) + (y2 ** 2)) ** 0.5))
+            b1 = (x1, y1)
+            if getDistance( (0,0), (x1,y1)) > 1.5 :
+                print(b1)
+            b2 = (x2, y2)
             #print(x1, y1)
-
-            print(IP1)
+            #if not np.isnan(IP1):
+            #    print(IP1)
 
     current_measurement = np.array([[np.float32(x)], [np.float32(y)]])
 
@@ -206,8 +212,8 @@ while True:
 
 
     tempR_p1_p2 = (ballInfo.radius[p1] + ballInfo.radius[p2]) * 1.5
-    IP1 = (last_prediction[0][0] - last_measurement[0][0]) * (last_prediction[0][0] - last_measurement[0][0]) \
-          + (ballInfo.queue[p2][1][0] - ballInfo.queue[p2][0][0]) * (ballInfo.queue[p2][1][1] - ballInfo.queue[p2][0][1])
+    #IP1 = (last_prediction[0][0] - last_measurement[0][0]) * (last_prediction[0][0] - last_measurement[0][0]) \
+    #      + (ballInfo.queue[p2][1][0] - ballInfo.queue[p2][0][0]) * (ballInfo.queue[p2][1][1] - ballInfo.queue[p2][0][1])
     #print("WHTIE: ", IP1)
     if p2 not in join and p1_p2 <= (ballInfo.radius[p1] + ballInfo.radius[p2]) * 1.05 and p2V != 0:
         join.append(p2)
@@ -223,6 +229,9 @@ while True:
 
     elif p2 not in join and tempR_p1_p2 >= getDistance(ballInfo.queue[p1][0], ballInfo.queue[p2][0]):# and IP1 > 0:
         print("IP1!!")
+        print(IP1)
+        print(b1)
+        print(b2)
         join.append(p2)
         s.append(p2)
         if not success and r in s:
