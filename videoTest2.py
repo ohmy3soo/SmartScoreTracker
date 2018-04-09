@@ -5,6 +5,7 @@ import billiardFunction
 import math
 import ballInfo
 from collections import deque
+import ballInfo2
 
 pw = 18
 ph = 16
@@ -102,29 +103,14 @@ def KF(frame, x,y, draw=True):
             elif 'R' in join:
                 join.remove('R')
 
-
-
-            x1 = x - last_prediction[1][0]
-            y1 = y - last_prediction[1][1]
-
-            x2 = ballInfo.queue[p2][0][0] - ballInfo.queue[p2][1][0]
-            y2 = ballInfo.queue[p2][0][1] - ballInfo.queue[p2][1][1]
-
-            IP1 = (x1 * x2 + y1 * y2) /( (((x1 ** 2) + (y1 ** 2)) ** 0.5) * (((x2 ** 2) + (y2 ** 2)) ** 0.5))
-            #print(x1, y1)
-
-            print(IP1)
-
     current_measurement = np.array([[np.float32(x)], [np.float32(y)]])
 
     kalman.correct(current_measurement)
     current_prediction = kalman.predict()
 
-
-
     last_prediction.appendleft(current_prediction)
     last_measurement.appendleft(current_measurement)
-
+    '''
     if len(last_prediction) >= 2:
         for i in range(1, len(last_measurement)):
             cv2.line(frame, (last_measurement[i][0], last_measurement[i][1]),
@@ -133,7 +119,7 @@ def KF(frame, x,y, draw=True):
             cv2.line(frame, (last_prediction[i][0], last_prediction[i][1]),
                      (last_prediction[i-1][0], last_prediction[i-1][1]), (255, 255, 0), 1)
 
-
+    '''
 kalman = cv2.KalmanFilter(4,2,1)
 kalman.measurementMatrix = np.array([[1,0,0,0],[0,1,0,0]],np.float32)
 kalman.transitionMatrix = np.array([[1,0,1,0],[0,1,0,1],[0,0,1,0],[0,0,0,1]],np.float32)
@@ -149,6 +135,8 @@ success = False
 start = False
 end = True
 
+yyy = ballInfo2.Yellow()
+rrr = ballInfo2.Red()
 
 while True:
     '''
@@ -161,8 +149,8 @@ while True:
 
     frame = billiardFunction.getWarp(img)
     #cv2.imshow("before", frame)
-    kernel = np.ones((3,3), np.uint8)
-    frame = cv2.morphologyEx(frame, cv2.MORPH_CLOSE, kernel)
+    #kernel = np.ones((3,3), np.uint8)
+    #frame = cv2.morphologyEx(frame, cv2.MORPH_CLOSE, kernel)
     #cv2.imshow("after", frame)
     width = frame.shape[1]
     height = frame.shape[0]
@@ -202,9 +190,6 @@ while True:
                     (ballInfo.queue['white'][i-1][0], ballInfo.queue['white'][i-1][1]), (0, 0, 255), 1)
     '''
 
-
-
-
     tempR_p1_p2 = (ballInfo.radius[p1] + ballInfo.radius[p2]) * 1.5
     IP1 = (last_prediction[0][0] - last_measurement[0][0]) * (last_prediction[0][0] - last_measurement[0][0]) \
           + (ballInfo.queue[p2][1][0] - ballInfo.queue[p2][0][0]) * (ballInfo.queue[p2][1][1] - ballInfo.queue[p2][0][1])
@@ -238,7 +223,7 @@ while True:
         join.remove(p2)
 
 
-    tempR_p1_r = (ballInfo.radius[p1] + ballInfo.radius[r]) * 1.5
+    tempR_p1_r = (ballInfo.radius[p1] + ballInfo.radius[r]) * 1.2
     IP2 = (last_prediction[0][0] - last_measurement[0][0]) * (last_prediction[0][0] - last_measurement[0][0]) \
           + (ballInfo.queue[r][1][0] - ballInfo.queue[r][0][0]) * (ballInfo.queue[r][1][1] - ballInfo.queue[r][0][1])
     #print("RED: ", IP2)
@@ -270,8 +255,13 @@ while True:
         join.remove(r)
 
 
+    #if IP1 < 0:
+    #    print('IP1: ', IP1)
+    if IP2 < 0:
+        print('IP2: ', IP2)
+
+
     drawLines(frame)
-    #print('IP1: ', IP1)
 
     cv2.line(img, (pw, ph), (img.shape[1] - pw, ph), (0, 0, 255), 1)
     cv2.line(img, (pw, ph), (img.shape[1] - pw, ph), (0, 0, 255), 1)
@@ -313,7 +303,9 @@ while True:
     else:
         cv2.circle(frame, (580, 280), 3, BGRcolor[r], thickness=3)
 
-    #print(p1V, p2V, rV)
+    rrr.KF(frame, ballInfo.queue['red'][0][0], ballInfo.queue['red'][0][1])
+    yyy.KF(frame, ballInfo.queue['yellow'][0][0],ballInfo.queue['yellow'][0][1])
+    #print(wV)
     cv2.imshow('frame', frame)
     #out.write(frame)
     #print(s)
