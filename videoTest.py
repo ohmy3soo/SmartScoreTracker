@@ -114,8 +114,8 @@ def KF(frame, x,y, draw=True):
 
             IP1 = (x1 * x2 + y1 * y2) /( (((x1 ** 2) + (y1 ** 2)) ** 0.5) * (((x2 ** 2) + (y2 ** 2)) ** 0.5))
             b1 = (x1, y1)
-            if getDistance( (0,0), (x1,y1)) > 1.5 :
-                print(b1)
+            #if getDistance( (0,0), (x1,y1)) > 1.5 :
+            #    print(b1)
             b2 = (x2, y2)
             #print(x1, y1)
             #if not np.isnan(IP1):
