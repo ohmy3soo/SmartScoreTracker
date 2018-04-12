@@ -5,6 +5,14 @@ import billiardFunction
 import math
 import ballInfo
 from collections import deque
+import matplotlib.pyplot as plt
+
+
+plt.title("Distance Graph")
+plt.xlabel("Time")
+plt.ylabel("Distance")
+
+
 
 pw = 18
 ph = 16
@@ -105,7 +113,7 @@ def KF(frame, x,y, draw=True):
                 join.remove('R')
 
 
-
+            '''
             x1 = x - last_prediction[0][0]
             y1 = y - last_prediction[0][1]
 
@@ -120,6 +128,13 @@ def KF(frame, x,y, draw=True):
             #print(x1, y1)
             #if not np.isnan(IP1):
             #    print(IP1)
+            #if dx != 0:
+            #    print(dy/dx)
+            '''
+            preD = getDistance((x,y), last_prediction[0])
+            #if preD > 3:
+            #    print(preD)
+
 
     current_measurement = np.array([[np.float32(x)], [np.float32(y)]])
 
@@ -130,7 +145,7 @@ def KF(frame, x,y, draw=True):
 
     last_prediction.appendleft(current_prediction)
     last_measurement.appendleft(current_measurement)
-
+    '''
     if len(last_prediction) >= 2:
         for i in range(1, len(last_measurement)):
             cv2.line(frame, (last_measurement[i][0], last_measurement[i][1]),
@@ -138,12 +153,12 @@ def KF(frame, x,y, draw=True):
 
             cv2.line(frame, (last_prediction[i][0], last_prediction[i][1]),
                      (last_prediction[i-1][0], last_prediction[i-1][1]), (255, 255, 0), 1)
-
+    '''
 
 kalman = cv2.KalmanFilter(4,2,1)
 kalman.measurementMatrix = np.array([[1,0,0,0],[0,1,0,0]],np.float32)
 kalman.transitionMatrix = np.array([[1,0,1,0],[0,1,0,1],[0,0,1,0],[0,0,0,1]],np.float32)
-kalman.processNoiseCov = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]],np.float32)*0.03
+kalman.processNoiseCov = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]],np.float32)
 
 
 
@@ -155,6 +170,10 @@ success = False
 start = False
 end = True
 
+
+
+fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Be sure to use the lower case
+out = cv2.VideoWriter('output.avi', fourcc, 30.0, (612, 306))
 
 while True:
     '''
@@ -195,6 +214,7 @@ while True:
             start = False
             join.clear()
             print('stop')
+            success = False
             s = []
 
 
@@ -211,33 +231,33 @@ while True:
 
 
 
-    tempR_p1_p2 = (ballInfo.radius[p1] + ballInfo.radius[p2]) * 1.5
+    tempR_p1_p2 = (ballInfo.radius[p1] + ballInfo.radius[p2]) * 1.4
     #IP1 = (last_prediction[0][0] - last_measurement[0][0]) * (last_prediction[0][0] - last_measurement[0][0]) \
     #      + (ballInfo.queue[p2][1][0] - ballInfo.queue[p2][0][0]) * (ballInfo.queue[p2][1][1] - ballInfo.queue[p2][0][1])
     #print("WHTIE: ", IP1)
     if p2 not in join and p1_p2 <= (ballInfo.radius[p1] + ballInfo.radius[p2]) * 1.05 and p2V != 0:
         join.append(p2)
         s.append(p2)
-        print("IP1 X")
+        #print("IP1 X")
         if not success and r in s:
             if s.count('Edge') >= 3:
                 print("GET SCORE")
                 success = True
+                s = "GET SCORE!"
             else:
                 s = []
                 s.append(p2)
 
     elif p2 not in join and tempR_p1_p2 >= getDistance(ballInfo.queue[p1][0], ballInfo.queue[p2][0]):# and IP1 > 0:
-        print("IP1!!")
-        print(IP1)
-        print(b1)
-        print(b2)
+        #print("IP1!!")
+
         join.append(p2)
         s.append(p2)
         if not success and r in s:
             if s.count('Edge') >= 3:
                 print("GET SCORE")
                 success = True
+                s = "GET SCORE!"
             else:
                 s = []
                 s.append(p2)
@@ -247,7 +267,7 @@ while True:
         join.remove(p2)
 
 
-    tempR_p1_r = (ballInfo.radius[p1] + ballInfo.radius[r]) * 1.5
+    tempR_p1_r = (ballInfo.radius[p1] + ballInfo.radius[r]) * 1.4
     IP2 = (last_prediction[0][0] - last_measurement[0][0]) * (last_prediction[0][0] - last_measurement[0][0]) \
           + (ballInfo.queue[r][1][0] - ballInfo.queue[r][0][0]) * (ballInfo.queue[r][1][1] - ballInfo.queue[r][0][1])
     #print("RED: ", IP2)
@@ -265,12 +285,14 @@ while True:
                 s.append(r)
     elif r not in join and tempR_p1_r >= getDistance(ballInfo.queue[p1][0], ballInfo.queue[r][0]):# and IP2 > 0:
         print("IP2!!")
+        print(s)
         join.append(r)
         s.append(r)
         if not success and p2 in s:
             if s.count('Edge') >= 3:
                 print("GET SCORE")
                 success = True
+                s = "GET SCORE!"
             else:
                 s = []
                 s.append(r)
@@ -279,7 +301,7 @@ while True:
         join.remove(r)
 
 
-    drawLines(frame)
+    #drawLines(frame)
     #print('IP1: ', IP1)
 
     cv2.line(img, (pw, ph), (img.shape[1] - pw, ph), (0, 0, 255), 1)
@@ -322,9 +344,15 @@ while True:
     else:
         cv2.circle(frame, (580, 280), 3, BGRcolor[r], thickness=3)
 
+
+
+    #d1 = getDistance(ballInfo.queue[p1][0], ballInfo.queue[p2][0])
+    #d2 = getDistance(ballInfo.queue[p1][0], ballInfo.queue[r][0])
+
+    #print(d1 , d2)
     #print(p1V, p2V, rV)
     cv2.imshow('frame', frame)
-    #out.write(frame)
+    out.write(frame)
     #print(s)
     #if join != []:
     #    print(join)
@@ -332,6 +360,6 @@ while True:
         break
 
 # Release everything if job is finished
-#out.release()
+out.release()
 camera.release()
 cv2.destroyAllWindows()
