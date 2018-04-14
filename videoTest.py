@@ -5,14 +5,6 @@ import billiardFunction
 import math
 import ballInfo
 from collections import deque
-import matplotlib.pyplot as plt
-
-
-plt.title("Distance Graph")
-plt.xlabel("Time")
-plt.ylabel("Distance")
-
-
 
 pw = 18
 ph = 16
