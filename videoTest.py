@@ -5,6 +5,8 @@ import billiardFunction
 import math
 import ballInfo
 from collections import deque
+import time
+
 
 pw = 18
 ph = 16
@@ -164,9 +166,12 @@ end = True
 
 
 
-fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Be sure to use the lower case
-out = cv2.VideoWriter('output.avi', fourcc, 30.0, (612, 306))
+#fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Be sure to use the lower case
+#out = cv2.VideoWriter('output_fps.avi', fourcc, 30.0, (612, 306))
 
+start_time = time.time()
+frame_count = 0;
+c1 = 0
 while True:
     '''
     p1 = 'yellow'
@@ -175,6 +180,8 @@ while True:
     '''
     ret, img = camera.read()
     img = imutils.resize(img, width=600)
+
+    frame_count+=1
 
     frame = billiardFunction.getWarp(img)
     #cv2.imshow("before", frame)
@@ -343,8 +350,20 @@ while True:
 
     #print(d1 , d2)
     #print(p1V, p2V, rV)
+    c2 = time.time()
+    cur_time = time.time() - start_time
+    time_m = "Time : %0.2f" % cur_time
+    frame_m = "Frame : %d" % frame_count
+    fps_m = "FPS : %0.2f" % (1/(c2-c1))
+    c1 = c2
+    cv2.putText(frame, time_m, (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
+    cv2.putText(frame, frame_m, (25, 45), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
+    cv2.putText(frame, fps_m, (25, 65), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
+
+    #print(ballInfo.check)
+    ballInfo.check = []
     cv2.imshow('frame', frame)
-    out.write(frame)
+    #out.write(frame)
     #print(s)
     #if join != []:
     #    print(join)
@@ -352,6 +371,6 @@ while True:
         break
 
 # Release everything if job is finished
-out.release()
+#out.release()
 camera.release()
 cv2.destroyAllWindows()

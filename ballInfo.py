@@ -54,6 +54,7 @@ def setInit(img):
     ph = 16
 
 
+check = []
 def traceBall(color, frame):
     global radius, whiteR, redR, yellowR
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -65,7 +66,19 @@ def traceBall(color, frame):
 
     kernal = np.ones((3, 3), "uint8")
     colorImage = cv2.dilate(colorImage, kernal)
-
+    if color == 'yellow':
+        cv2.imshow("yROI1", colorImage)
+        print(queue[color])
+    '''
+    if(len(queue[color]) > 10 and radius[color] > 0 and color == 'yellow'):
+        print(queue[color][0])
+        #colorImage = colorImage[queue[color][0][0]-5*int(radius[color]) : queue[color][0][0]+5*int(radius[color]),
+        #             queue[color][0][1] - 5*int(radius[color]) : queue[color][0][1] + 5*int(radius[color])]
+        colorImage = colorImage[queue[color][0][1] - 10 * int(radius[color]): queue[color][0][1] + 10 * int(radius[color]),
+                     queue[color][0][0] - 10 * int(radius[color]): queue[color][0][0] + 10 * int(radius[color])]
+    '''
+    if color == 'yellow':
+        cv2.imshow("yROI2", colorImage)
     contours = cv2.findContours(colorImage, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[1]
 
     minD = 2 * frame.shape[1]
@@ -102,6 +115,7 @@ def traceBall(color, frame):
         rM = getDistance(pre[0], pre[1], centerX, centerY)
         if rM > 1.5:
             queue[color].appendleft((int(centerX), int(centerY)))
+            check.append(color)
         else:
             queue[color].appendleft(queue[color][0])
 
