@@ -66,51 +66,68 @@ def traceBall(color, frame):
 
     kernal = np.ones((3, 3), "uint8")
     colorImage = cv2.dilate(colorImage, kernal)
-    if color == 'yellow':
-        cv2.imshow("yROI1", colorImage)
-        print(queue[color])
+
+
     '''
-    if(len(queue[color]) > 10 and radius[color] > 0 and color == 'yellow'):
+    이미지의 영역을 공의 중심과 반지름을 이용해 줄인다.
+    줄여진 이미지의 중심으로부터 새로운 중심까지의 이동거리(방향)을 구한다.
+    큐에 있는 가장 최근의 점에 적용하여 저장한다.    
+    '''
+
+    if (len(queue[color]) > 0 and radius[color] > 0):
         print(queue[color][0])
-        #colorImage = colorImage[queue[color][0][0]-5*int(radius[color]) : queue[color][0][0]+5*int(radius[color]),
-        #             queue[color][0][1] - 5*int(radius[color]) : queue[color][0][1] + 5*int(radius[color])]
-        colorImage = colorImage[queue[color][0][1] - 10 * int(radius[color]): queue[color][0][1] + 10 * int(radius[color]),
-                     queue[color][0][0] - 10 * int(radius[color]): queue[color][0][0] + 10 * int(radius[color])]
-    '''
-    if color == 'yellow':
-        cv2.imshow("yROI2", colorImage)
-    contours = cv2.findContours(colorImage, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[1]
+        if queue[color][0][1] - 10 * int(radius[color]) > 0 and queue[color][0][1] + 10 * int(radius[color]) < colorImage.shape[0] and queue[color][0][0] - 10 * int(radius[color]) > 0 and queue[color][0][0] + 10 * int(radius[color]) < colorImage.shape[1]:
+            colorImage = colorImage[
+                         queue[color][0][1] - 10 * int(radius[color]): queue[color][0][1] + 10 * int(radius[color]),
+                         queue[color][0][0] - 10 * int(radius[color]): queue[color][0][0] + 10 * int(radius[color])]
+            cv2.imshow("Rrrrr", colorImage)
+
+
+    numOfLabels, img_label, stats, centroids \
+        = cv2.connectedComponentsWithStats(colorImage)
 
     minD = 2 * frame.shape[1]
     idx = 0
     update = False
 
-    for pic, contour in enumerate(contours):
-        area = cv2.contourArea(contour)
-        if 200 > area > 60:
+    for pic, centroid in enumerate(centroids):
+        if stats[pic][0] == 0 and stats[pic][1] == 0:
+            continue
+        if np.any(np.isnan(centroid)):
+            continue
+        x, y, width, height, area = stats[pic]
 
-            x, y, w, h = cv2.boundingRect(contour)
-            if x >= pw/2 and x <= frame.shape[1]-pw and y >= ph/2 and y <= frame.shape[0]-ph:
-                centerX = int(x + w / 2)
-                centerY = int(y + h / 2)
-
+        # 공 객체 후보
+        if 300 > area > 50:
+            if x >= pw / 2 and x <= frame.shape[1] - pw and y >= ph / 2 and y <= frame.shape[0] - ph:
+                centerX, centerY = int(centroid[0]), int(centroid[1])
+                # 처음 이미지 --> 큰 원본
                 if not queue[color]:
-                    print(color, 'rX: ', (w / 2))
-                    print(color, 'rY: ', (h / 2))
-                    radius[color] = (w+h)/4
+                    print(color, 'rX: ', (width / 2))
+                    print(color, 'rY: ', (height / 2))
+                    radius[color] = (width + height) / 4
                     print(radius[color])
                     queue[color].appendleft((centerX, centerY))
+
+                # 그 중 가장 가까운 객체
+                centerX = centerX - 10*radius[color] + queue[color][0][0]
+                centerY = centerY - 10*radius[color] + queue[color][0][1]
 
                 d = getDistance(queue[color][0][0], queue[color][0][1], centerX, centerY)
                 if d < minD:
                     minD = d
                     idx = pic
+                    # 찾음
                     update = True
 
+    # 찾음
     if update:
-        x, y, w, h = cv2.boundingRect(contours[idx])
-        centerX = int(x + w / 2)
-        centerY = int(y + h / 2)
+        x, y, width, height, area = stats[idx]
+        centerX, centerY = int(centroids[idx][0]), int(centroids[idx][1])
+        centerX = int(centerX - 10 * radius[color] + queue[color][0][0])
+        centerY = int(centerY - 10 * radius[color] + queue[color][0][1])
+
+
         pre = queue[color][0]
         rM = getDistance(pre[0], pre[1], centerX, centerY)
         if rM > 1.5:
@@ -118,11 +135,49 @@ def traceBall(color, frame):
             check.append(color)
         else:
             queue[color].appendleft(queue[color][0])
+            rM = 0
 
-        rM = getDistance(queue[color][0][0], queue[color][0][1], queue[color][1][0], queue[color][1][1])
-
-        cv2.rectangle(frame, (x, y), (x + w, y + h), colors[color], 2)
+        cv2.circle(frame, (centerX, centerY), int(radius[color]), colors[color], 1)
+        #cv2.rectangle(frame, (x, y), (x + width, y + height), colors[color], 2)
         cv2.putText(frame, color, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.7, colors[color])
         return rM
 
     return -1
+
+
+
+
+
+# 맨 처음 프레임에서 공을 찾는다. 초기위치 설정!
+def findBall(color, frame):
+    global radius, whiteR, redR, yellowR
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+    lower = colorBoundary['lower_'+color]
+    upper = colorBoundary['upper_'+color]
+
+    colorImage = cv2.inRange(hsv, lower, upper)
+
+    kernal = np.ones((3, 3), "uint8")
+    colorImage = cv2.dilate(colorImage, kernal)
+
+    numOfLabels, img_label, stats, centroids \
+        = cv2.connectedComponentsWithStats(colorImage)
+
+    for pic, centroid in enumerate(centroids):
+        if stats[pic][0] == 0 and stats[pic][1] == 0:
+            continue
+        if np.any(np.isnan(centroid)):
+            continue
+
+        x, y, w, h, area = stats[pic]
+        centerX, centerY = int(centroid[0]), int(centroid[1])
+
+        if 300 > area > 50:
+            if x >= pw/2 and x <= frame.shape[1] - pw/2 and y >= ph/2 and y <= frame.shape[0] - ph/2:
+                if w/h < 1.2 or h/w < 1.2:
+                    print(color, 'rX: ', (w / 2))
+                    print(color, 'rY: ', (w / 2))
+                    radius[color] = (w + h) / 4
+                    print(radius[color])
+                    queue[color].appendleft((centerX, centerY))

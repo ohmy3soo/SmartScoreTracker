@@ -58,6 +58,8 @@ last_measurement = deque()
 IP1 = 0
 b1 = 0
 b2 = 0
+
+
 def KF(frame, x,y, draw=True):
     global current_measurement, measurements, last_measurement, current_prediction, last_prediction , IP1
     global b1, b2
@@ -172,12 +174,21 @@ end = True
 start_time = time.time()
 frame_count = 0;
 c1 = 0
+stackX = 0
+stackY = 0
+pre = 1
+
+d1 = 0
+d2 = 0
+
+frame = billiardFunction.getWarp(img)
+width = frame.shape[1]
+height = frame.shape[0]
+ballInfo.findBall(r, frame)
+ballInfo.findBall(p1, frame)
+ballInfo.findBall(p2, frame)
+
 while True:
-    '''
-    p1 = 'yellow'
-    p2 = 'white'
-    r = 'red'
-    '''
     ret, img = camera.read()
     img = imutils.resize(img, width=600)
 
@@ -220,12 +231,12 @@ while True:
     if p1V > 2:
         start = True
         end = False
-    '''
-    if len(ballInfo.queue['white']) >= 2:
-        for i in range(1, len(ballInfo.queue['white'])):
-            cv2.line(frame, (ballInfo.queue['white'][i][0], ballInfo.queue['white'][i][1]),
-                    (ballInfo.queue['white'][i-1][0], ballInfo.queue['white'][i-1][1]), (0, 0, 255), 1)
-    '''
+    
+    #if len(ballInfo.queue['white']) >= 2:
+    #    for i in range(1, len(ballInfo.queue['white'])):
+    #        cv2.line(frame, (ballInfo.queue['white'][i][0], ballInfo.queue['white'][i][1]),
+    #                (ballInfo.queue['white'][i-1][0], ballInfo.queue['white'][i-1][1]), (0, 0, 255), 1)
+    
 
 
 
@@ -234,6 +245,7 @@ while True:
     #IP1 = (last_prediction[0][0] - last_measurement[0][0]) * (last_prediction[0][0] - last_measurement[0][0]) \
     #      + (ballInfo.queue[p2][1][0] - ballInfo.queue[p2][0][0]) * (ballInfo.queue[p2][1][1] - ballInfo.queue[p2][0][1])
     #print("WHTIE: ", IP1)
+
     if p2 not in join and p1_p2 <= (ballInfo.radius[p1] + ballInfo.radius[p2]) * 1.05 and p2V != 0:
         join.append(p2)
         s.append(p2)
@@ -344,12 +356,14 @@ while True:
         cv2.circle(frame, (580, 280), 3, BGRcolor[r], thickness=3)
 
 
-
+    #d1_pre = d1
+    #d2_pre = d2
     #d1 = getDistance(ballInfo.queue[p1][0], ballInfo.queue[p2][0])
     #d2 = getDistance(ballInfo.queue[p1][0], ballInfo.queue[r][0])
 
-    #print(d1 , d2)
+    #print(abs(d1_pre - d1) , abs(d2_pre - d2))
     #print(p1V, p2V, rV)
+    
     c2 = time.time()
     cur_time = time.time() - start_time
     time_m = "Time : %0.2f" % cur_time
