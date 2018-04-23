@@ -36,7 +36,7 @@ s = []
 stopCounter_p1 = 10
 stopCounter_p2 = 10
 stopCounter_r = 10
-stopBuffer = 2
+stopBuffer = 5
 
 
 def getDistance(o1, o2):
@@ -166,10 +166,8 @@ success = False
 start = False
 end = True
 
-
-
-#fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Be sure to use the lower case
-#out = cv2.VideoWriter('output_fps.avi', fourcc, 30.0, (612, 306))
+fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Be sure to use the lower case
+out = cv2.VideoWriter('/Users/kihunahn/Desktop/storage/' + str(time.time())+'.avi', fourcc, 30.0, (612, 306))
 
 start_time = time.time()
 frame_count = 0;
@@ -226,19 +224,14 @@ while True:
             print('stop')
             success = False
             s = []
+            out.release()
+            fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Be sure to use the lower case
+            out = cv2.VideoWriter('/Users/kihunahn/Desktop/storage/' + str(time.time()) + '.avi', fourcc, 30.0, (612, 306))
 
-
-    if p1V > 2:
+    if p1V > 1.5:
+        print(p1V)
         start = True
         end = False
-    
-    #if len(ballInfo.queue['white']) >= 2:
-    #    for i in range(1, len(ballInfo.queue['white'])):
-    #        cv2.line(frame, (ballInfo.queue['white'][i][0], ballInfo.queue['white'][i][1]),
-    #                (ballInfo.queue['white'][i-1][0], ballInfo.queue['white'][i-1][1]), (0, 0, 255), 1)
-    
-
-
 
 
     tempR_p1_p2 = (ballInfo.radius[p1] + ballInfo.radius[p2]) * 1.4
@@ -268,7 +261,7 @@ while True:
             if s.count('Edge') >= 3:
                 print("GET SCORE")
                 success = True
-                s = "GET SCORE!"
+                s = ["GET SCORE!"]
             else:
                 s = []
                 s.append(p2)
@@ -282,7 +275,7 @@ while True:
     IP2 = (last_prediction[0][0] - last_measurement[0][0]) * (last_prediction[0][0] - last_measurement[0][0]) \
           + (ballInfo.queue[r][1][0] - ballInfo.queue[r][0][0]) * (ballInfo.queue[r][1][1] - ballInfo.queue[r][0][1])
     #print("RED: ", IP2)
-    if r not in join and p1_r <= (ballInfo.radius[p1] + ballInfo.radius[r]) * 1.05 and rV !=0:
+    if r not in join and p1_r <= (ballInfo.radius[p1] + ballInfo.radius[r]) * 1.05 and rV >1.5:
         join.append(r)
         s.append(r)
         print('IP2 X')
@@ -294,16 +287,15 @@ while True:
             else:
                 s = [];
                 s.append(r)
-    elif r not in join and tempR_p1_r >= getDistance(ballInfo.queue[p1][0], ballInfo.queue[r][0]):# and IP2 > 0:
+    elif r not in join and tempR_p1_r >= getDistance(ballInfo.queue[p1][0], ballInfo.queue[r][0]) and rV != 0:# and IP2 > 0:
         print("IP2!!")
-        print(s)
         join.append(r)
         s.append(r)
         if not success and p2 in s:
             if s.count('Edge') >= 3:
                 print("GET SCORE")
                 success = True
-                s = "GET SCORE!"
+                s = ["GET SCORE!"]
             else:
                 s = []
                 s.append(r)
@@ -326,17 +318,17 @@ while True:
     if end:
         cv2.putText(frame, 'End', (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, BGRcolor[p1])
 
-    if p1V > 1:
+    if p1V > 0:
         stopCounter_p1 = 0
     else:
         stopCounter_p1 += 1
 
-    if p2V > 1:
+    if p2V > 0:
         stopCounter_p2 = 0
     else:
         stopCounter_p2 += 1
 
-    if rV > 1:
+    if rV > 0:
         stopCounter_r = 0
     else:
         stopCounter_r += 1
@@ -377,14 +369,13 @@ while True:
     #print(ballInfo.check)
     ballInfo.check = []
     cv2.imshow('frame', frame)
-    #out.write(frame)
+    out.write(frame)
     #print(s)
     #if join != []:
     #    print(join)
     if (cv2.waitKey(1) & 0xFF) == ord('q'): # Hit `q` to exit
         break
-
 # Release everything if job is finished
-#out.release()
+out.release()
 camera.release()
 cv2.destroyAllWindows()

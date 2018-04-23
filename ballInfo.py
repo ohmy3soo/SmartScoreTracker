@@ -32,11 +32,16 @@ whiteR = 0
 yellowR = 0
 redR = 0
 
+whiteC = 0
+yellowC = 0
+redC = 0
 
+
+ROI_SIZE = 8
 
 queue = {'red': redQ, 'yellow': yellowQ, 'white': whiteQ}
 radius = {'red': redR, 'yellow': yellowR, 'white': whiteR}
-
+center = {'red': redC, 'yellow': yellowC, 'white':whiteC}
 
 width = 0
 height = 0
@@ -55,6 +60,7 @@ def setInit(img):
 
 
 check = []
+
 def traceBall(color, frame):
     global radius, whiteR, redR, yellowR
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -67,20 +73,24 @@ def traceBall(color, frame):
     kernal = np.ones((3, 3), "uint8")
     colorImage = cv2.dilate(colorImage, kernal)
 
+    pre_h = ROI_SIZE * radius[color]
+    pre_w = ROI_SIZE * radius[color]
 
-    '''
-    이미지의 영역을 공의 중심과 반지름을 이용해 줄인다.
-    줄여진 이미지의 중심으로부터 새로운 중심까지의 이동거리(방향)을 구한다.
-    큐에 있는 가장 최근의 점에 적용하여 저장한다.    
-    '''
+    h1 = max(0, int(queue[color][0][1] - ROI_SIZE * radius[color]))
+    if h1 == 0:
+        pre_h = queue[color][0][1]
+    h2 = min(int(queue[color][0][1] + ROI_SIZE * radius[color]), colorImage.shape[0])
 
-    if (len(queue[color]) > 0 and radius[color] > 0):
-        print(queue[color][0])
-        if queue[color][0][1] - 10 * int(radius[color]) > 0 and queue[color][0][1] + 10 * int(radius[color]) < colorImage.shape[0] and queue[color][0][0] - 10 * int(radius[color]) > 0 and queue[color][0][0] + 10 * int(radius[color]) < colorImage.shape[1]:
-            colorImage = colorImage[
-                         queue[color][0][1] - 10 * int(radius[color]): queue[color][0][1] + 10 * int(radius[color]),
-                         queue[color][0][0] - 10 * int(radius[color]): queue[color][0][0] + 10 * int(radius[color])]
-            cv2.imshow("Rrrrr", colorImage)
+    w1 = max(0, int(queue[color][0][0] - ROI_SIZE * radius[color]))
+    if w1 == 0:
+        pre_w = queue[color][0][0]
+    w2 = min(int(queue[color][0][0] + ROI_SIZE * radius[color]), colorImage.shape[1])
+
+    #print(h1, h2, w1, w2)
+    colorImage = colorImage[h1: h2, w1: w2]
+
+    #print(colorImage.shape)
+    cv2.imshow("ROI_"+color, colorImage)
 
 
     numOfLabels, img_label, stats, centroids \
@@ -99,46 +109,44 @@ def traceBall(color, frame):
 
         # 공 객체 후보
         if 300 > area > 50:
-            if x >= pw / 2 and x <= frame.shape[1] - pw and y >= ph / 2 and y <= frame.shape[0] - ph:
-                centerX, centerY = int(centroid[0]), int(centroid[1])
-                # 처음 이미지 --> 큰 원본
-                if not queue[color]:
-                    print(color, 'rX: ', (width / 2))
-                    print(color, 'rY: ', (height / 2))
-                    radius[color] = (width + height) / 4
-                    print(radius[color])
-                    queue[color].appendleft((centerX, centerY))
+            centerX, centerY = int(centroid[0]), int(centroid[1])
 
-                # 그 중 가장 가까운 객체
-                centerX = centerX - 10*radius[color] + queue[color][0][0]
-                centerY = centerY - 10*radius[color] + queue[color][0][1]
-
-                d = getDistance(queue[color][0][0], queue[color][0][1], centerX, centerY)
-                if d < minD:
-                    minD = d
-                    idx = pic
-                    # 찾음
-                    update = True
-
+            d = getDistance(pre_h, pre_w, centerX, centerY)
+            if d < minD:
+                minD = d
+                idx = pic
+                # 찾음
+                update = True
     # 찾음
     if update:
         x, y, width, height, area = stats[idx]
-        centerX, centerY = int(centroids[idx][0]), int(centroids[idx][1])
-        centerX = int(centerX - 10 * radius[color] + queue[color][0][0])
-        centerY = int(centerY - 10 * radius[color] + queue[color][0][1])
-
+        #x = int(x - pre_w + queue[color][0][0])
+        #y = int(y - pre_h + queue[color][0][1])
+        x = int(x - pre_w + queue[color][0][0])
+        y = int(y - pre_h + queue[color][0][1])
+        centerX = int(x + width/2)
+        centerY = int(y + height/2)
 
         pre = queue[color][0]
         rM = getDistance(pre[0], pre[1], centerX, centerY)
+        '''
+        if color == 'yellow':
+            print('-'*10)
+            print(pre[0],pre[1])
+            print(centerX, centerY)
+            print('-' * 10)
+        '''
+        '''
         if rM > 1.5:
-            queue[color].appendleft((int(centerX), int(centerY)))
+            queue[color].appendleft((centerX, centerY))
             check.append(color)
         else:
             queue[color].appendleft(queue[color][0])
             rM = 0
-
-        cv2.circle(frame, (centerX, centerY), int(radius[color]), colors[color], 1)
-        #cv2.rectangle(frame, (x, y), (x + width, y + height), colors[color], 2)
+        '''
+        queue[color].appendleft((centerX, centerY))
+        #cv2.circle(frame, (centerX, centerY), int(radius[color]), colors[color], 1)
+        cv2.rectangle(frame, (x, y), (x + width, y + height), colors[color], 2)
         cv2.putText(frame, color, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.7, colors[color])
         return rM
 
@@ -178,6 +186,8 @@ def findBall(color, frame):
                 if w/h < 1.2 or h/w < 1.2:
                     print(color, 'rX: ', (w / 2))
                     print(color, 'rY: ', (w / 2))
+
                     radius[color] = (w + h) / 4
-                    print(radius[color])
                     queue[color].appendleft((centerX, centerY))
+                    center[color] = (ROI_SIZE*radius[color], ROI_SIZE*radius[color])
+                    print(radius[color], center[color])
