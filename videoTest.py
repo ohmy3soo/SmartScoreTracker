@@ -166,8 +166,8 @@ success = False
 start = False
 end = True
 
-fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Be sure to use the lower case
-out = cv2.VideoWriter('/Users/kihunahn/Desktop/storage/' + str(time.time())+'.avi', fourcc, 30.0, (612, 306))
+#fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Be sure to use the lower case
+#out = cv2.VideoWriter('/Users/kihunahn/Desktop/storage/' + str(time.time())+'.avi', fourcc, 30.0, (612, 306))
 
 start_time = time.time()
 frame_count = 0;
@@ -224,9 +224,9 @@ while True:
             print('stop')
             success = False
             s = []
-            out.release()
-            fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Be sure to use the lower case
-            out = cv2.VideoWriter('/Users/kihunahn/Desktop/storage/' + str(time.time()) + '.avi', fourcc, 30.0, (612, 306))
+            #out.release()
+            #fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Be sure to use the lower case
+            #out = cv2.VideoWriter('/Users/kihunahn/Desktop/storage/' + str(time.time()) + '.avi', fourcc, 30.0, (612, 306))
 
     if p1V > 1.5:
         print(p1V)
@@ -369,13 +369,13 @@ while True:
     #print(ballInfo.check)
     ballInfo.check = []
     cv2.imshow('frame', frame)
-    out.write(frame)
+    #out.write(frame)
     #print(s)
     #if join != []:
     #    print(join)
     if (cv2.waitKey(1) & 0xFF) == ord('q'): # Hit `q` to exit
         break
 # Release everything if job is finished
-out.release()
+#out.release()
 camera.release()
 cv2.destroyAllWindows()
