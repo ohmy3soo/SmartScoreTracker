@@ -6,7 +6,11 @@ import math
 import ballInfo
 from collections import deque
 import time
-
+'''
+TODO
+display score
+make display function and module
+'''
 
 pw = 18
 ph = 16
