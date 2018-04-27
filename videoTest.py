@@ -6,6 +6,7 @@ import math
 import ballInfo
 from collections import deque
 import time
+
 '''
 TODO
 display score
@@ -15,11 +16,6 @@ make display function and module
 pw = 18
 ph = 16
 
-def drawLines(img):
-    cv2.line(img, (pw, ph), (img.shape[1]-pw, ph), (0,0,255), 1)
-    cv2.line(img, (img.shape[1]-pw, ph), (img.shape[1]-pw, img.shape[0]-ph), (0, 0, 255), 1)
-    cv2.line(img, (img.shape[1]-pw, img.shape[0]-ph), (pw, img.shape[0]-ph), (0, 0, 255), 1)
-    cv2.line(img, (pw, img.shape[0]-ph), (pw, ph), (0, 0, 255), 1)
 
 BGRcolor = {"red":(0,0,255),
             "yellow":(0,255,255),
@@ -307,8 +303,6 @@ while True:
         print("Red ball is detached")
         join.remove(r)
 
-
-    #drawLines(frame)
     #print('IP1: ', IP1)
 
     cv2.line(img, (pw, ph), (img.shape[1] - pw, ph), (0, 0, 255), 1)
@@ -366,6 +360,7 @@ while True:
     frame_m = "Frame : %d" % frame_count
     fps_m = "FPS : %0.2f" % (1/(c2-c1))
     c1 = c2
+
     cv2.putText(frame, time_m, (25, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
     cv2.putText(frame, frame_m, (25, 45), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
     cv2.putText(frame, fps_m, (25, 65), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
