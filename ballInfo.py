@@ -84,8 +84,15 @@ def traceBall(color, frame):
 
     colorImage = colorImage[h1: h2, w1: w2]
 
-   # cv2.imshow("ROI_"+color, colorImage)
-
+    if color == 'yellow':
+        cv2.imshow("ROI_" + color, colorImage)
+        cv2.moveWindow("ROI_"+color, 612, 0)
+    if color == 'white':
+        cv2.imshow("ROI_" + color, colorImage)
+        cv2.moveWindow("ROI_"+color, 612, 190)
+    if color == 'red':
+        cv2.imshow("ROI_" + color, colorImage)
+        cv2.moveWindow("ROI_"+color, 612, 360)
 
     numOfLabels, img_label, stats, centroids \
         = cv2.connectedComponentsWithStats(colorImage)

@@ -109,7 +109,7 @@ while True:
             print('stop')
             success = False
             ballInfo.join = []
-            
+
             temp_0 = ballInfo.queue[p1][0]
             temp_1 = ballInfo.queue[p1][1]
             ballInfo.queue[p1].clear()
@@ -129,6 +129,8 @@ while True:
     display.displayScore(frame, score['yellow'], score['white'])
 
     cv2.imshow('frame', frame)
+    cv2.moveWindow('frame', 0,0)
+
     #out.write(frame)
     if (cv2.waitKey(1) & 0xFF) == ord('q'):
         break
