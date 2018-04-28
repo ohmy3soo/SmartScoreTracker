@@ -20,28 +20,26 @@ colors = OrderedDict({
             #"green":(0,255,0),
             "blue":(255,0,0) })
 
+join = []
+check = []
+
+whiteM = deque()
+yellowM = deque()
+redM = deque()
 
 whiteQ = deque()
 yellowQ = deque()
 redQ = deque()
-rSide = deque()
-lSide = deque()
-getV = deque()
-''''''
+
 whiteR = 0
 yellowR = 0
 redR = 0
 
-whiteC = 0
-yellowC = 0
-redC = 0
-
-
 ROI_SIZE = 8
 
+move = {'red': redM, 'yellow': yellowM, 'white': whiteM}
 queue = {'red': redQ, 'yellow': yellowQ, 'white': whiteQ}
 radius = {'red': redR, 'yellow': yellowR, 'white': whiteR}
-center = {'red': redC, 'yellow': yellowC, 'white':whiteC}
 
 width = 0
 height = 0
@@ -58,8 +56,6 @@ def setInit(img):
     pw = 18
     ph = 16
 
-
-check = []
 
 def traceBall(color, frame):
     global radius, whiteR, redR, yellowR
@@ -86,11 +82,9 @@ def traceBall(color, frame):
         pre_w = queue[color][0][0]
     w2 = min(int(queue[color][0][0] + ROI_SIZE * radius[color]), colorImage.shape[1])
 
-    #print(h1, h2, w1, w2)
     colorImage = colorImage[h1: h2, w1: w2]
 
-    #print(colorImage.shape)
-    cv2.imshow("ROI_"+color, colorImage)
+   # cv2.imshow("ROI_"+color, colorImage)
 
 
     numOfLabels, img_label, stats, centroids \
@@ -128,35 +122,18 @@ def traceBall(color, frame):
         centerY = int(y + height/2)
 
         pre = queue[color][0]
-        rM = getDistance(pre[0], pre[1], centerX, centerY)
-        '''
-        if color == 'yellow':
-            print('-'*10)
-            print(pre[0],pre[1])
-            print(centerX, centerY)
-            print('-' * 10)
-        '''
-        '''
-        if rM > 1.5:
-            queue[color].appendleft((centerX, centerY))
-            check.append(color)
-        else:
-            queue[color].appendleft(queue[color][0])
-            rM = 0
-        '''
+        d = getDistance(pre[0], pre[1], centerX, centerY)
+
         queue[color].appendleft((centerX, centerY))
         #cv2.circle(frame, (centerX, centerY), int(radius[color]), colors[color], 1)
         cv2.rectangle(frame, (x, y), (x + width, y + height), colors[color], 2)
         cv2.putText(frame, color, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.7, colors[color])
-        return rM
-
-    return -1
-
-
+        move[color] = d
+    else:
+        move[color] = -1
 
 
 
-# 맨 처음 프레임에서 공을 찾는다. 초기위치 설정!
 def findBall(color, frame):
     global radius, whiteR, redR, yellowR
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -189,5 +166,3 @@ def findBall(color, frame):
 
                     radius[color] = (w + h) / 4
                     queue[color].appendleft((centerX, centerY))
-                    center[color] = (ROI_SIZE*radius[color], ROI_SIZE*radius[color])
-                    print(radius[color], center[color])
