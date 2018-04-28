@@ -39,8 +39,10 @@ def displayFPSInfo(img, time, frame_count):
     cv2.putText(img, fps_m, (25, 65), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
 
 
-def displayScore():
-    pass
+def displayScore(frame, y, w):
+    cv2.putText(frame, str(y), (450, 80), cv2.FONT_HERSHEY_SIMPLEX, 3, BGR['yellow'])
+    cv2.putText(frame, ':', (510, 70), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 0, 0))
+    cv2.putText(frame, str(w), (540, 80), cv2.FONT_HERSHEY_SIMPLEX, 3, BGR['white'])
 
 
 def displayPath(frame, p1):
@@ -55,16 +57,16 @@ def displayState(frame, p1, state):
     cv2.putText(frame, state, (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, BGR[p1])
 
 
-def displayMove(frame, *args):
-    if 'yellow' in args:
+def displayMove(frame):
+    if ballInfo.move['yellow'] < 1.4:
         cv2.circle(frame, (550, 280), 5, BGR['yellow'], thickness=1)
     else:
         cv2.circle(frame, (550, 280), 3, BGR['yellow'], thickness=3)
-    if 'white' in args:
+    if ballInfo.move['white'] < 1.4:
         cv2.circle(frame, (565, 280), 5, BGR['white'], thickness=1)
     else:
         cv2.circle(frame, (565, 280), 3, BGR['white'], thickness=3)
-    if 'red' in args:
+    if ballInfo.move['red'] < 1.4:
         cv2.circle(frame, (580, 280), 5, BGR['red'], thickness=1)
     else:
         cv2.circle(frame, (580, 280), 3, BGR['red'], thickness=3)

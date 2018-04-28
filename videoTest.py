@@ -7,7 +7,6 @@ from collections import deque
 import time
 import display
 import collision
-from ballInfo import join as s
 
 pw = 18
 ph = 16
@@ -23,27 +22,25 @@ ret, img = camera.read()
 img = imutils.resize(img, width=600)
 billiardFunction.setMatrix(img)
 
-join = []
-
 last_prediction = deque()
 last_measurement = deque()
 
-
-def KF(frame, x,y):
+def KF(position):
     global current_measurement, measurements, last_measurement, current_prediction, last_prediction
     collision.withEdge(last_prediction)
+
+    x = position[0]
+    y = position[1]
 
     current_measurement = np.array([[np.float32(x)], [np.float32(y)]])
 
     kalman.correct(current_measurement)
     current_prediction = kalman.predict()
 
-
-
     last_prediction.appendleft(current_prediction)
     last_measurement.appendleft(current_measurement)
 
-    display.displayKF(frame, last_measurement, last_prediction)
+    #display.displayKF(frame, last_measurement, last_prediction)
 
 kalman = cv2.KalmanFilter(4,2,1)
 kalman.measurementMatrix = np.array([[1,0,0,0],[0,1,0,0]],np.float32)
@@ -56,6 +53,8 @@ p1 = 'yellow'
 p2 = 'white'
 r = 'red'
 success = False
+
+score = {'yellow': 0, 'white': 0}
 
 #fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Be sure to use the lower case
 #out = cv2.VideoWriter('/Users/kihunahn/Desktop/storage/' + str(time.time())+'.avi', fourcc, 30.0, (612, 306))
@@ -93,9 +92,9 @@ while True:
     ballInfo.traceBall(p2, frame)
 
     cX, cY = ballInfo.queue[p1][0]
-    KF(frame, cX, cY)
+    KF(ballInfo.queue[p1][0])
     success = collision.withBall(p1, p2, r, success)
-    print(success)
+
     if ballInfo.move[p1] == ballInfo.move[p2] == ballInfo.move[r] == 0:
         if state == 'Start':
             if not success:
@@ -103,11 +102,19 @@ while True:
                 temp = p1
                 p1 = p2
                 p2 = temp
+            else:
+                score[p1] += 1
             state = 'End'
-            join.clear()
+            ballInfo.join.clear()
             print('stop')
             success = False
-            join = []
+            ballInfo.join = []
+            
+            temp_0 = ballInfo.queue[p1][0]
+            temp_1 = ballInfo.queue[p1][1]
+            ballInfo.queue[p1].clear()
+            ballInfo.queue[p1].appendleft(temp_1)
+            ballInfo.queue[p1].appendleft(temp_0)
             #out.release()
             #fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Be sure to use the lower case
             #out = cv2.VideoWriter('/Users/kihunahn/Desktop/storage/' + str(time.time()) + '.avi', fourcc, 30.0, (612, 306))
@@ -116,9 +123,10 @@ while True:
         state = 'Start'
 
     display.displayState(frame, p1, state)
-    #display.displayMove(frame, p1, p2, r)
+    display.displayMove(frame)
     display.displayPath(frame, p1)
-    #display.displayFPSInfo(frame, time.time(), frame_count)
+    display.displayFPSInfo(frame, time.time(), frame_count)
+    display.displayScore(frame, score['yellow'], score['white'])
 
     cv2.imshow('frame', frame)
     #out.write(frame)
