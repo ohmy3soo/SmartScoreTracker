@@ -25,6 +25,12 @@ billiardFunction.setMatrix(img)
 last_prediction = deque()
 last_measurement = deque()
 
+
+def onChange(x):
+    print('k')
+    pass
+
+
 def KF(position):
     global current_measurement, measurements, last_measurement, current_prediction, last_prediction
     collision.withEdge(last_prediction)
@@ -77,13 +83,25 @@ ballInfo.findBall(p1, frame)
 ballInfo.findBall(p2, frame)
 
 state = 'End'
-while True:
+
+'''
+cv2.namedWindow('12')
+cv2.createTrackbar('test', '12', 1, 10, onChange)
+'''
+cv2.namedWindow('w')
+cv2.createTrackbar("B", 'w', 0, 1, onChange)
+
+while camera.isOpened():
     ret, img = camera.read()
     img = imutils.resize(img, width=600)
+    #btn1 = cv2.getTrackbarPos('Switch', '12')
+    #print(btn1)
+
 
     frame_count += 1
 
     frame = billiardFunction.getWarp(img)
+
     kernel = np.ones((3,3), np.uint8)
     frame = cv2.morphologyEx(frame, cv2.MORPH_CLOSE, kernel)
 
@@ -129,10 +147,12 @@ while True:
     display.displayScore(frame, score['yellow'], score['white'])
 
     cv2.imshow('frame', frame)
-    cv2.moveWindow('frame', 0,0)
+    cv2.moveWindow('frame', 0, 0)
 
+    key = cv2.waitKey(1)
     #out.write(frame)
-    if (cv2.waitKey(1) & 0xFF) == ord('q'):
+    #print(key)
+    if key & 0xFF == ord('q'):
         break
 
 #out.release()

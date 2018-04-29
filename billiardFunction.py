@@ -54,3 +54,4 @@ def usingBlueBoard(image):
                 board_w = w
                 board = approx
     return board, blue_masked
+

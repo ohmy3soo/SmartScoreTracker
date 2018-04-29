@@ -45,13 +45,14 @@ def withBall(p1, p2, r, success):
 
     p1_p2 = getDistance(ballInfo.queue[p1][0], ballInfo.queue[p2][0])
     if p2 not in ballInfo.check and p1_p2 < upper_p1_p2:
+        print(ballInfo.move[p2])
         ballInfo.join.append(p2)
         ballInfo.check.append(p2)
         if not success and r in ballInfo.join:
             if ballInfo.join.count('Edge') >= 3:
                 print("GET SCORE")
                 success = True
-                join = ["GET SCORE!"]
+                ballInfo.join = ["GET SCORE!"]
 
     elif p2 in ballInfo.check and p1_p2 >= upper_p1_p2:
         print(p2, "ball is detached")
@@ -59,6 +60,7 @@ def withBall(p1, p2, r, success):
 
     p1_r = getDistance(ballInfo.queue[p1][0], ballInfo.queue[r][0])
     if r not in ballInfo.check and p1_r < upper_p1_r:
+        print(ballInfo.move[r])
         ballInfo.join.append(r)
         ballInfo.check.append(r)
         if not success and p2 in ballInfo.join:
@@ -66,6 +68,7 @@ def withBall(p1, p2, r, success):
                 print("GET SCORE")
                 success = True
                 ballInfo.join = ["GET SCORE!"]
+
     elif r in ballInfo.check and p1_r >= upper_p1_r:
         print("Red ball is detached")
         ballInfo.check.remove(r)
