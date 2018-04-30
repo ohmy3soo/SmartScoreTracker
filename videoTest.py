@@ -26,6 +26,13 @@ last_prediction = deque()
 last_measurement = deque()
 
 
+def isStop(input):
+    for d in input:
+        if d != 0 :
+            return False
+    return True
+
+
 def onChange(x):
     print('k')
     pass
@@ -113,7 +120,7 @@ while camera.isOpened():
     KF(ballInfo.queue[p1][0])
     success = collision.withBall(p1, p2, r, success)
 
-    if ballInfo.move[p1][0] == ballInfo.move[p2][0] == ballInfo.move[r][0] == 0:
+    if isStop(ballInfo.move[p1]) and isStop(ballInfo.move[p2]) and isStop(ballInfo.move[r]):
         if state == 'Start':
             if not success:
                 print('change')
