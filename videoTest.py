@@ -19,14 +19,16 @@ BGRcolor = {"red":(0,0,255),
 
 
 
-videoList = ["/Users/kihunahn/Desktop/videoSrc/1.mp4",
+videoList = ["/Users/kihunahn/Desktop/videoSrc/fps30/1.avi",
+                "/Users/kihunahn/Desktop/videoSrc/1.mp4",
                 "/Users/kihunahn/Desktop/videoSrc/2.mp4",
                 "/Users/kihunahn/Desktop/videoSrc/3.mp4",
                 "/Users/kihunahn/Desktop/videoSrc/4.mp4",
                 "/Users/kihunahn/Desktop/videoSrc/hard1.mp4",
                 "/Users/kihunahn/Desktop/videoSrc/hard2.mp4",
                 "/Users/kihunahn/Desktop/videoSrc/hard3.mp4", ###
-                "/Users/kihunahn/Desktop/videoSrc/hard4.mp4" ]
+                "/Users/kihunahn/Desktop/videoSrc/hard4.mp4",
+                "/Users/kihunahn/Desktop/videoSrc/output_1_test1.avi"]
 
 videoName = videoList[0]
 
@@ -108,14 +110,28 @@ state = 'End'
 cv2.namedWindow('12')
 cv2.createTrackbar('test', '12', 1, 10, onChange)
 '''
-cv2.namedWindow('w')
-cv2.createTrackbar("B", 'w', 0, 1, onChange)
+cv2.namedWindow('frame')
+'''
+display.displayState(frame, p1, state)
+display.displayMove(frame)
+display.displayPath(frame, p1)
+display.displayFPSInfo(frame, time.time(), frame_count)
+display.displayScore(frame, score['yellow'], score['white'])
+'''
+cv2.createTrackbar("State", 'frame', False, True, onChange)
+cv2.createTrackbar("Move", 'frame', False, True, onChange)
+cv2.createTrackbar("Path", 'frame', False, True, onChange)
+cv2.createTrackbar("FPS", 'frame', False, True, onChange)
+cv2.createTrackbar("Score", 'frame', False, True, onChange)
 
 while camera.isOpened():
     ret, img = camera.read()
     img = imutils.resize(img, width=600)
-    #btn1 = cv2.getTrackbarPos('Switch', '12')
-    #print(btn1)
+    displayState = cv2.getTrackbarPos('State', 'frame')
+    displayMove = cv2.getTrackbarPos('Move', 'frame')
+    displayPath = cv2.getTrackbarPos('Path', 'frame')
+    displayFPS = cv2.getTrackbarPos('FPS', 'frame')
+    displayScore = cv2.getTrackbarPos('Score', 'frame')
 
 
     frame_count += 1
@@ -160,11 +176,16 @@ while camera.isOpened():
     if ballInfo.move[p1][0] > 1.5:
         state = 'Start'
 
-    display.displayState(frame, p1, state)
-    display.displayMove(frame)
-    display.displayPath(frame, p1)
-    display.displayFPSInfo(frame, time.time(), frame_count)
-    display.displayScore(frame, score['yellow'], score['white'])
+    if displayState:
+        display.displayState(frame, p1, state)
+    if displayMove:
+        display.displayMove(frame)
+    if displayPath:
+        display.displayPath(frame, p1)
+    if displayFPS:
+        display.displayFPSInfo(frame, time.time(), frame_count)
+    if displayScore:
+        display.displayScore(frame, score['yellow'], score['white'])
 
     cv2.imshow('frame', frame)
     cv2.moveWindow('frame', 0, 0)

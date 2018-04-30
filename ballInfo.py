@@ -96,7 +96,7 @@ def traceBall(color, frame):
         cv2.imshow("2ROI_" + color, colorImage)
         cv2.moveWindow("ROI_" + color, 1224, 0)
     '''
-    '''
+
     if color == 'yellow':
         cv2.imshow("ROI_" + color, colorImage)
         cv2.moveWindow("ROI_"+color, 612, 0)
@@ -106,7 +106,7 @@ def traceBall(color, frame):
     if color == 'red':
         cv2.imshow("ROI_" + color, colorImage)
         cv2.moveWindow("ROI_"+color, 612, 360)
-    '''
+
     numOfLabels, img_label, stats, centroids \
         = cv2.connectedComponentsWithStats(colorImage)
 
@@ -185,12 +185,13 @@ def getPyrDistance(size, frame, color, w, h):
 
     ddd = getDistance(pyr[color][1][0], pyr[color][1][1], pyr[color][0][0], pyr[color][0][1])
     move[color].appendleft(ddd)
+    '''
     for i in range(0,3):
         if move[color][i] != 0:
             break
     else:
         print(color, "ball stop")
-
+    '''
 
     #print(move[color])
     #print(getDistance(pyr[color][1][0], pyr[color][1][1], pyr[color][0][0], pyr[color][0][1]))
