@@ -17,7 +17,20 @@ BGRcolor = {"red":(0,0,255),
             "green":(0,255,0),
             "blue":(255,0,0) }
 
-camera = cv2.VideoCapture("/Users/kihunahn/Desktop/videoSrc/1.mp4")
+
+
+videoList = ["/Users/kihunahn/Desktop/videoSrc/1.mp4",
+                "/Users/kihunahn/Desktop/videoSrc/2.mp4",
+                "/Users/kihunahn/Desktop/videoSrc/3.mp4",
+                "/Users/kihunahn/Desktop/videoSrc/4.mp4",
+                "/Users/kihunahn/Desktop/videoSrc/hard1.mp4",
+                "/Users/kihunahn/Desktop/videoSrc/hard2.mp4",
+                "/Users/kihunahn/Desktop/videoSrc/hard3.mp4", ###
+                "/Users/kihunahn/Desktop/videoSrc/hard4.mp4" ]
+
+videoName = videoList[0]
+
+camera = cv2.VideoCapture(videoName)
 ret, img = camera.read()
 img = imutils.resize(img, width=600)
 billiardFunction.setMatrix(img)

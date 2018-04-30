@@ -3,6 +3,8 @@ import math
 height = width = 0
 pw = ph = 0
 
+
+joinEdge =[]
 def init(w, h, p_w, p_h):
     global width, height, pw, ph
     width = w
@@ -20,23 +22,39 @@ def withEdge(last_prediction):
         if pre_dy == dy == 0:
             directionY = 1
 
-        if directionY <= 0 and last_prediction[0][1] > height - ph:
-            ballInfo.join.append('Edge')
+        if directionY <= 0 and last_prediction[0][1] >= height - ph:
+            if 'B' not in joinEdge:
+                joinEdge.append('B')
+                ballInfo.join.append('Edge')
+        elif 'B' in joinEdge and last_prediction[0][0] < height - ph:
+            joinEdge.remove('B')
 
         if directionY <= 0 and last_prediction[0][1] <= ph:
-            ballInfo.join.append('Edge')
-
+            if 'U' not in joinEdge:
+                joinEdge.append('U')
+                ballInfo.join.append('Edge')
+        elif 'U' in joinEdge and last_prediction[0][1] > ph:
+            joinEdge.remove('U')
 
         pre_dx = ballInfo.yellowQ[2][0] - ballInfo.yellowQ[1][0]
         dx = ballInfo.yellowQ[1][0] - ballInfo.yellowQ[0][0]
         directionX = pre_dx * dx
         if pre_dx == dx == 0:
             directionX = 1
+
         if directionX <= 0 and last_prediction[0][0] <= pw:
-            ballInfo.join.append('Edge')
+            if 'L' not in joinEdge:
+                joinEdge.append('L')
+                ballInfo.join.append('Edge')
+        elif 'L' in joinEdge and last_prediction[0][1] > pw:
+            joinEdge.remove('L')
 
         if directionX <= 0 and last_prediction[0][0] >= width - pw:
-            ballInfo.join.append('Edge')
+            if 'R' not in joinEdge:
+                joinEdge.append('R')
+                ballInfo.join.append('Edge')
+        elif 'R' in joinEdge and last_prediction[0][1] < width - pw:
+            joinEdge.remove('R')
 
 
 def withBall(p1, p2, r, success):
