@@ -58,15 +58,15 @@ def displayState(frame, p1, state):
 
 
 def displayMove(frame):
-    if ballInfo.move['yellow'] < 1.4:
+    if ballInfo.move['yellow'][0] < 1.4:
         cv2.circle(frame, (550, 280), 5, BGR['yellow'], thickness=1)
     else:
         cv2.circle(frame, (550, 280), 3, BGR['yellow'], thickness=3)
-    if ballInfo.move['white'] < 1.4:
+    if ballInfo.move['white'][0] < 1.4:
         cv2.circle(frame, (565, 280), 5, BGR['white'], thickness=1)
     else:
         cv2.circle(frame, (565, 280), 3, BGR['white'], thickness=3)
-    if ballInfo.move['red'] < 1.4:
+    if ballInfo.move['red'][0] < 1.4:
         cv2.circle(frame, (580, 280), 5, BGR['red'], thickness=1)
     else:
         cv2.circle(frame, (580, 280), 3, BGR['red'], thickness=3)

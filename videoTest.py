@@ -113,7 +113,7 @@ while camera.isOpened():
     KF(ballInfo.queue[p1][0])
     success = collision.withBall(p1, p2, r, success)
 
-    if ballInfo.move[p1] == ballInfo.move[p2] == ballInfo.move[r] == 0:
+    if ballInfo.move[p1][0] == ballInfo.move[p2][0] == ballInfo.move[r][0] == 0:
         if state == 'Start':
             if not success:
                 print('change')
@@ -137,7 +137,7 @@ while camera.isOpened():
             #fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Be sure to use the lower case
             #out = cv2.VideoWriter('/Users/kihunahn/Desktop/storage/' + str(time.time()) + '.avi', fourcc, 30.0, (612, 306))
 
-    if ballInfo.move[p1] > 1.5:
+    if ballInfo.move[p1][0] > 1.5:
         state = 'Start'
 
     display.displayState(frame, p1, state)
