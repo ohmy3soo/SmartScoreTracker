@@ -45,20 +45,20 @@ move = {'red': redM, 'yellow': yellowM, 'white': whiteM}
 queue = {'red': redQ, 'yellow': yellowQ, 'white': whiteQ}
 radius = {'red': redR, 'yellow': yellowR, 'white': whiteR}
 pyr = {'red': redP, 'yellow': yellowP, 'white': whiteP}
-width = 0
-height = 0
-pw = 18
-ph = 16
+width = height = 0
+pw = ph = 0
+
 
 def getDistance(x1,y1,x2,y2):
     return math.sqrt((x1-x2)**2 + (y1-y2)**2)
 
 
-def setInit(img):
-    width = img.shape[1]
-    height = img.shape[0]
-    pw = 18
-    ph = 16
+def init(w, h, p_w, p_h):
+    global width, height, pw, ph
+    width = w
+    height = h
+    pw = p_w
+    ph = p_h
 
 
 def traceBall(color, frame, display):
@@ -88,15 +88,6 @@ def traceBall(color, frame, display):
         w2 = min(int(queue[color][0][0] + ROI_SIZE * radius[color]), colorImage.shape[1])
 
         colorImage = colorImage[h1: h2, w1: w2]
-    '''
-    if color == 'yellow':
-        cv2.imshow("1ROI_" + color, colorImage)
-        cv2.moveWindow("ROI_" + color, 612, 0)
-    colorImage = cv2.pyrUp(colorImage)
-    if color == 'yellow':
-        cv2.imshow("2ROI_" + color, colorImage)
-        cv2.moveWindow("ROI_" + color, 1224, 0)
-    '''
 
     if color == 'yellow':
         cv2.imshow("ROI_" + color, colorImage)
@@ -122,7 +113,6 @@ def traceBall(color, frame, display):
             continue
         x, y, width, height, area = stats[pic]
 
-        # 공 객체 후보
         if 500 > area > 50:
             if width / height > 3 or height / width > 3:
                 continue
@@ -132,15 +122,10 @@ def traceBall(color, frame, display):
             if d < minD:
                 minD = d
                 idx = pic
-                # 찾음
                 update = True
 
-    # 찾음
     if update:
         x, y, width, height, area = stats[idx]
-
-        #x = int(x - pre_w + queue[color][0][0])
-        #y = int(y - pre_h + queue[color][0][1])
         if move[color][0] != -1:
             x = int(x - pre_w + queue[color][0][0])
             y = int(y - pre_h + queue[color][0][1])
@@ -155,22 +140,17 @@ def traceBall(color, frame, display):
         queue[color].appendleft((centerX, centerY))
         if color == 'red':
             getPyrDistance(2, colorImage, color, pre_w, pre_h)
-        #cv2.circle(frame, (centerX, centerY), int(radius[color]), colors[color], 1)
         if display:
             cv2.rectangle(frame, (x, y), (x + width, y + height), colors[color], 2)
             cv2.putText(frame, color, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.7, colors[color])
 
     else:
         move[color].appendleft(-1)
-        if color == 'white':
-            print(move[color][0])
 
 
 def getPyrDistance(size, frame, color, w, h):
     global prePyr
-    #preX, preY = queue[color][0] * size
     frame = cv2.pyrUp(frame)
-    #print(queue[color][0])
     numOfLabels, img_label, stats, centroids \
         = cv2.connectedComponentsWithStats(frame)
     for pic, centroid in enumerate(centroids):
@@ -182,24 +162,11 @@ def getPyrDistance(size, frame, color, w, h):
         x = int(x - w*size + queue[color][0][0]*size)
         y = int(y - h*size + queue[color][0][1]*size)
         # 공 객체 후보
-        if 2000 > area > 200:
-            #print('pyr:', x ,y)
+        if 1000 > area > 200:
             pyr[color].appendleft((x, y))
 
     ddd = getDistance(pyr[color][1][0], pyr[color][1][1], pyr[color][0][0], pyr[color][0][1])
     move[color].appendleft(ddd)
-    '''
-    for i in range(0,3):
-        if move[color][i] != 0:
-            break
-    else:
-        print(color, "ball stop")
-    '''
-
-    #print(move[color])
-    #print(getDistance(pyr[color][1][0], pyr[color][1][1], pyr[color][0][0], pyr[color][0][1]))
-    #cv2.imshow('up', frame)
-
 
 
 def findBall(color, frame):

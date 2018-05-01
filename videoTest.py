@@ -21,26 +21,22 @@ videoPath = "/Users/kihunahn/Desktop/videoSrc/"
 fps = ["fps30/", "fps60/"]
 videoList = ["1.avi", "2.avi", "3.avi", "4.avi", "hard1.avi", "hard2.avi", "hard3.avi"]###
 
-videoName = videoPath + fps[0] + videoList[6]
+# 가리는 문제 -> 2, 5
+# 정확도 -> 3
+videoName = videoPath + fps[0] + videoList[5]
 
 camera = cv2.VideoCapture(videoName)
 ret, img = camera.read()
 img = imutils.resize(img, width=600)
 billiardFunction.setMatrix(img)
+frame = billiardFunction.getWarp(img)
+width = frame.shape[1]
+height = frame.shape[0]
 
-last_prediction = deque()
-last_measurement = deque()
 
-
-def isStop(input):
-    for d in input:
-        if d != 0:
-            return False
-    return True
-
-def isMove(input):
-    for d in input:
-        if d == 0:
+def isStop(moveList):
+    for move in moveList:
+        if move != 0:
             return False
     return True
 
@@ -69,43 +65,35 @@ def KF(color, position):
     last_prediction.appendleft(current_prediction)
     last_measurement.appendleft(current_measurement)
 
-    display.displayKF(frame, last_measurement, last_prediction)
+    #display.displayKF(frame, last_measurement, last_prediction)
 
 kalman = cv2.KalmanFilter(4,2,1)
 kalman.measurementMatrix = np.array([[1,0,0,0],[0,1,0,0]],np.float32)
 kalman.transitionMatrix = np.array([[1,0,1,0],[0,1,0,1],[0,0,1,0],[0,0,0,1]],np.float32)
 kalman.processNoiseCov = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]],np.float32)
-
-p1 = turn = 'yellow'
-p2 = 'white'
-r = 'red'
-success = False
-
-score = {'yellow': 0, 'white': 0}
+last_prediction = deque()
+last_measurement = deque()
 
 #fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Be sure to use the lower case
 #out = cv2.VideoWriter('/Users/kihunahn/Desktop/storage/' + str(time.time())+'.avi', fourcc, 30.0, (612, 306))
 
-start_time = time.time()
-display.setStartTime(start_time)
-
+p1 = turn = 'yellow'
+p2 = 'white'
+r = 'red'
+state = 'End'
+success = False
+score = {'yellow': 0, 'white': 0}
 frame_count = 0;
 
-frame = billiardFunction.getWarp(img)
-width = frame.shape[1]
-height = frame.shape[0]
-
+display.setStartTime(time.time())
 collision.init(width, height, pw, ph)
-
+ballInfo.init(width, height, pw, ph)
 
 ballInfo.findBall(r, frame)
 ballInfo.findBall(p1, frame)
 ballInfo.findBall(p2, frame)
 
-state = 'End'
-
 cv2.namedWindow('frame')
-
 cv2.createTrackbar("Ball", 'frame', False, True, onChange)
 cv2.createTrackbar("State", 'frame', False, True, onChange)
 cv2.createTrackbar("Move", 'frame', False, True, onChange)
@@ -185,7 +173,6 @@ while camera.isOpened():
 
     key = cv2.waitKey(1)
     #out.write(frame)
-    #print(key)
     if key & 0xFF == ord('q'):
         break
 
