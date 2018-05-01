@@ -1,10 +1,15 @@
 import ballInfo
 import math
+from collections import deque
+
 height = width = 0
 pw = ph = 0
 
 
 joinEdge =[]
+d_p1_p2 = deque(maxlen=3)
+d_p1_r = deque(maxlen=3)
+
 def init(w, h, p_w, p_h):
     global width, height, pw, ph
     width = w
@@ -61,12 +66,45 @@ def withEdge(color, last_prediction):
             joinEdge.remove('R')
 
 
-def withBall(p1, p2, r, success):
-    upper_p1_p2 = (ballInfo.radius[p1] + ballInfo.radius[p2]) * 1.4
-    upper_p1_r = (ballInfo.radius[p1] + ballInfo.radius[r]) * 1.4
+def withBall(p1, p2, r, success, predict):
+    kkk = getDistance(predict, ballInfo.queue[p1][0])
+    #print(kkk)
+    upper_p1_p2 = (ballInfo.radius[p1] + ballInfo.radius[p2]) * 1.2
+    upper_p1_r = (ballInfo.radius[p1] + ballInfo.radius[r]) * 1.2
 
     p1_p2 = getDistance(ballInfo.queue[p1][0], ballInfo.queue[p2][0])
-    if p2 not in ballInfo.check and p1_p2 < upper_p1_p2:
+    d_p1_p2.appendleft(p1_p2)
+
+    while len(d_p1_p2) < 3:
+        d_p1_p2.appendleft(p1_p2)
+
+    p1_r = getDistance(ballInfo.queue[p1][0], ballInfo.queue[r][0])
+    d_p1_r.appendleft(p1_r)
+
+    while len(d_p1_r) < 3:
+        d_p1_r.appendleft(p1_r)
+
+    a1 = (d_p1_p2[1] - d_p1_p2[0]) * (d_p1_p2[2] - d_p1_p2[1])
+    a2 = (d_p1_r[1] - d_p1_r[0]) * (d_p1_r[2] - d_p1_r[1])
+    '''
+    if a1<0:
+        print(kkk)
+        print("p2:",d_p1_p2)
+    if a2 < 0:
+        print(kkk)
+        print("r:",d_p1_r)
+    '''
+
+    '''
+    print('-'*20)
+    print(d_p1_p2[1] , upper_p1_p2*2.0/1.2)
+    print(a1)
+    print(kkk, 3*ballInfo.radius[p1])
+    '''
+
+    if p2 not in ballInfo.check and ((p1_p2 < upper_p1_p2)
+                                     or (d_p1_p2[1] < upper_p1_p2*2.0/1.2 and a1 < 0 and kkk > 2*ballInfo.radius[p1]) ):
+        #print(ballInfo.move[p1])
         ballInfo.join.append(p2)
         ballInfo.check.append(p2)
         if not success and r in ballInfo.join:
@@ -78,7 +116,8 @@ def withBall(p1, p2, r, success):
         ballInfo.check.remove(p2)
 
     p1_r = getDistance(ballInfo.queue[p1][0], ballInfo.queue[r][0])
-    if r not in ballInfo.check and p1_r < upper_p1_r:
+    if r not in ballInfo.check and ((p1_r < upper_p1_r)
+                                    or (d_p1_r[1] < upper_p1_r * 2.0 / 1.2 and a2 < 0 and kkk > 2 * ballInfo.radius[p1]) ):
         ballInfo.join.append(r)
         ballInfo.check.append(r)
         if not success and p2 in ballInfo.join:
@@ -93,3 +132,12 @@ def withBall(p1, p2, r, success):
 
 def getDistance(o1, o2):
     return math.sqrt((o1[0]-o2[0])**2 + (o1[1]-o2[1])**2)
+
+
+def check1():
+    # 공 간의 거리가 최소가 되는 지점!
+
+    # 예상 위치(0)와 실제 위치의 거리가 3*r 이상
+
+    # 벡터값 ..
+    pass

@@ -47,6 +47,7 @@ def displayScore(frame, y, w):
 
 def displayPath(frame, p1):
     for i in range(1, len(ballInfo.queue[p1])):
+        cv2.circle(frame, (ballInfo.queue[p1][i][0], ballInfo.queue[p1][i][1]), 1, BGR[p1], thickness=1)
         cv2.line(frame, (ballInfo.queue[p1][i][0], ballInfo.queue[p1][i][1]),
                  (ballInfo.queue[p1][i - 1][0], ballInfo.queue[p1][i - 1][1]), BGR[p1], 1)
 
@@ -74,9 +75,9 @@ def displayMove(frame):
 
 def displayKF(frame, last_measurement, last_prediction):
     if len(last_prediction) >= 2:
-        for i in range(1, len(last_measurement)):
-            cv2.line(frame, (last_measurement[i][0], last_measurement[i][1]),
-                     (last_measurement[i - 1][0], last_measurement[i - 1][1]), (0, 255, 0), 1)
+        for i in range(1, len(last_prediction)):
+            #cv2.line(frame, (last_measurement[i][0], last_measurement[i][1]),
+            #         (last_measurement[i - 1][0], last_measurement[i - 1][1]), (0, 255, 0), 1)
 
             cv2.line(frame, (last_prediction[i][0], last_prediction[i][1]),
                      (last_prediction[i - 1][0], last_prediction[i - 1][1]), (255, 255, 0), 1)

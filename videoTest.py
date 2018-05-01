@@ -17,20 +17,11 @@ BGRcolor = {"red":(0,0,255),
             "green":(0,255,0),
             "blue":(255,0,0) }
 
+videoPath = "/Users/kihunahn/Desktop/videoSrc/"
+fps = ["fps30/", "fps60/"]
+videoList = ["1.avi", "2.avi", "3.avi", "4.avi", "hard1.avi", "hard2.avi", "hard3.avi"]###
 
-
-videoList = ["/Users/kihunahn/Desktop/videoSrc/fps30/2.avi",
-                "/Users/kihunahn/Desktop/videoSrc/1.mp4",
-                "/Users/kihunahn/Desktop/videoSrc/2.mp4",
-                "/Users/kihunahn/Desktop/videoSrc/3.mp4",
-                "/Users/kihunahn/Desktop/videoSrc/4.mp4",
-                "/Users/kihunahn/Desktop/videoSrc/hard1.mp4",
-                "/Users/kihunahn/Desktop/videoSrc/hard2.mp4",
-                "/Users/kihunahn/Desktop/videoSrc/hard3.mp4", ###
-                "/Users/kihunahn/Desktop/videoSrc/hard4.mp4",
-                "/Users/kihunahn/Desktop/videoSrc/output_1_test1.avi"]
-
-videoName = videoList[0]
+videoName = videoPath + fps[0] + videoList[1]
 
 camera = cv2.VideoCapture(videoName)
 ret, img = camera.read()
@@ -146,9 +137,9 @@ while camera.isOpened():
 
     cX, cY = ballInfo.queue[p1][0]
     KF(p1, ballInfo.queue[p1][0])
-    success = collision.withBall(p1, p2, r, success)
+    if len(last_prediction) > 2:
+        success = collision.withBall(p1, p2, r, success, last_prediction[1])
 
-    print(success, state)
     if isStop(ballInfo.move[p1]) and isStop(ballInfo.move[p2]) and isStop(ballInfo.move[r]):
 
         if state == 'Start':
