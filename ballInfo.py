@@ -61,7 +61,7 @@ def setInit(img):
     ph = 16
 
 
-def traceBall(color, frame):
+def traceBall(color, frame, display):
     global radius, whiteR, redR, yellowR
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
@@ -72,21 +72,22 @@ def traceBall(color, frame):
 
     kernal = np.ones((3, 3), "uint8")
     colorImage = cv2.dilate(colorImage, kernal)
+    pre_h = pre_w = 0
+    if move[color][0] != -1:
+        pre_h = ROI_SIZE * radius[color]
+        pre_w = ROI_SIZE * radius[color]
 
-    pre_h = ROI_SIZE * radius[color]
-    pre_w = ROI_SIZE * radius[color]
+        h1 = max(0, int(queue[color][0][1] - ROI_SIZE * radius[color]))
+        if h1 == 0:
+            pre_h = queue[color][0][1]
+        h2 = min(int(queue[color][0][1] + ROI_SIZE * radius[color]), colorImage.shape[0])
 
-    h1 = max(0, int(queue[color][0][1] - ROI_SIZE * radius[color]))
-    if h1 == 0:
-        pre_h = queue[color][0][1]
-    h2 = min(int(queue[color][0][1] + ROI_SIZE * radius[color]), colorImage.shape[0])
+        w1 = max(0, int(queue[color][0][0] - ROI_SIZE * radius[color]))
+        if w1 == 0:
+            pre_w = queue[color][0][0]
+        w2 = min(int(queue[color][0][0] + ROI_SIZE * radius[color]), colorImage.shape[1])
 
-    w1 = max(0, int(queue[color][0][0] - ROI_SIZE * radius[color]))
-    if w1 == 0:
-        pre_w = queue[color][0][0]
-    w2 = min(int(queue[color][0][0] + ROI_SIZE * radius[color]), colorImage.shape[1])
-
-    colorImage = colorImage[h1: h2, w1: w2]
+        colorImage = colorImage[h1: h2, w1: w2]
     '''
     if color == 'yellow':
         cv2.imshow("1ROI_" + color, colorImage)
@@ -138,8 +139,9 @@ def traceBall(color, frame):
         x, y, width, height, area = stats[idx]
         #x = int(x - pre_w + queue[color][0][0])
         #y = int(y - pre_h + queue[color][0][1])
-        x = int(x - pre_w + queue[color][0][0])
-        y = int(y - pre_h + queue[color][0][1])
+        if move[color][0] != -1:
+            x = int(x - pre_w + queue[color][0][0])
+            y = int(y - pre_h + queue[color][0][1])
         centerX = int(x + width/2)
         centerY = int(y + height/2)
 
@@ -148,19 +150,18 @@ def traceBall(color, frame):
         if color != 'red':
             move[color].appendleft(d)
 
-
         queue[color].appendleft((centerX, centerY))
         if color == 'red':
-            #print('=====')
-            #print(d)
             getPyrDistance(2, colorImage, color, pre_w, pre_h)
-            #print('=====')
         #cv2.circle(frame, (centerX, centerY), int(radius[color]), colors[color], 1)
-        cv2.rectangle(frame, (x, y), (x + width, y + height), colors[color], 2)
-        cv2.putText(frame, color, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.7, colors[color])
+        if display:
+            cv2.rectangle(frame, (x, y), (x + width, y + height), colors[color], 2)
+            cv2.putText(frame, color, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.7, colors[color])
 
     else:
         move[color].appendleft(-1)
+        if color == 'white':
+            print(move[color][0])
 
 
 def getPyrDistance(size, frame, color, w, h):
@@ -232,3 +233,4 @@ def findBall(color, frame):
                     radius[color] = (w + h) / 4
                     queue[color].appendleft((centerX, centerY))
                     pyr[color].appendleft((2*centerX, 2*centerY))
+                    move[color].appendleft(0.0)

@@ -13,16 +13,17 @@ def init(w, h, p_w, p_h):
     ph = p_h
 
 
-def withEdge(last_prediction):
+def withEdge(color, last_prediction):
     if len(last_prediction) > 2:
 
-        pre_dy = ballInfo.yellowQ[2][1] - ballInfo.yellowQ[1][1]
-        dy = ballInfo.yellowQ[1][1] - ballInfo.yellowQ[0][1]
+        pre_dy = ballInfo.queue[color][2][1] - ballInfo.queue[color][1][1]
+        dy = ballInfo.queue[color][1][1] - ballInfo.queue[color][0][1]
         directionY = pre_dy * dy
         if pre_dy == dy == 0:
             directionY = 1
 
         if directionY <= 0 and last_prediction[0][1] >= height - ph:
+            print('B')
             if 'B' not in joinEdge:
                 joinEdge.append('B')
                 ballInfo.join.append('Edge')
@@ -30,19 +31,21 @@ def withEdge(last_prediction):
             joinEdge.remove('B')
 
         if directionY <= 0 and last_prediction[0][1] <= ph:
+            print('U')
             if 'U' not in joinEdge:
                 joinEdge.append('U')
                 ballInfo.join.append('Edge')
         elif 'U' in joinEdge and last_prediction[0][1] > ph:
             joinEdge.remove('U')
 
-        pre_dx = ballInfo.yellowQ[2][0] - ballInfo.yellowQ[1][0]
-        dx = ballInfo.yellowQ[1][0] - ballInfo.yellowQ[0][0]
+        pre_dx = ballInfo.queue[color][2][0] - ballInfo.queue[color][1][0]
+        dx = ballInfo.queue[color][1][0] - ballInfo.queue[color][0][0]
         directionX = pre_dx * dx
         if pre_dx == dx == 0:
             directionX = 1
 
         if directionX <= 0 and last_prediction[0][0] <= pw:
+            print('L')
             if 'L' not in joinEdge:
                 joinEdge.append('L')
                 ballInfo.join.append('Edge')
@@ -50,6 +53,7 @@ def withEdge(last_prediction):
             joinEdge.remove('L')
 
         if directionX <= 0 and last_prediction[0][0] >= width - pw:
+            print('R')
             if 'R' not in joinEdge:
                 joinEdge.append('R')
                 ballInfo.join.append('Edge')

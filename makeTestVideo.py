@@ -16,15 +16,15 @@ videoList = ["1.mp4",
                 "hard3.mp4", ###
                 "hard4.mp4"]
 '''
-videoList = ["1", "2", "3", "4", "hard1", "hard2", "hard3", "hard4"]
-videoName = videoPath + videoList[4] + ".mp4"
+videoList = ["1", "2", "3", "4", "hard1", "hard2", "hard3", "hard4", "final4"]
+videoName = videoPath + videoList[-1] + ".mp4"
 
 camera = cv2.VideoCapture(videoName)
 ret, img = camera.read()
-print(img.shape)
+#print(img.shape)
 fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Be sure to use the lower case
-out = cv2.VideoWriter('/Users/kihunahn/Desktop/videoSrc/fps30/' + videoList[4]+'.avi', fourcc, 30.0, (img.shape[1], img.shape[0]))
-
+out = cv2.VideoWriter('/Users/kihunahn/Desktop/videoSrc/fps30/' + videoList[1]+'.avi', fourcc, 30.0, (img.shape[1], img.shape[0]))
+# VideoWriter(filename, fourcc, fps, frameSize[, isColor]) -> <VideoWriter object>
 
 while camera.isOpened():
     ret, img = camera.read()

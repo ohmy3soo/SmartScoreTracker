@@ -19,7 +19,7 @@ BGRcolor = {"red":(0,0,255),
 
 
 
-videoList = ["/Users/kihunahn/Desktop/videoSrc/fps30/1.avi",
+videoList = ["/Users/kihunahn/Desktop/videoSrc/fps30/2.avi",
                 "/Users/kihunahn/Desktop/videoSrc/1.mp4",
                 "/Users/kihunahn/Desktop/videoSrc/2.mp4",
                 "/Users/kihunahn/Desktop/videoSrc/3.mp4",
@@ -43,19 +43,29 @@ last_measurement = deque()
 
 def isStop(input):
     for d in input:
-        if d != 0 :
+        if d != 0:
+            return False
+    return True
+
+def isMove(input):
+    for d in input:
+        if d == 0:
             return False
     return True
 
 
 def onChange(x):
-    print('k')
     pass
 
 
-def KF(position):
-    global current_measurement, measurements, last_measurement, current_prediction, last_prediction
-    collision.withEdge(last_prediction)
+def KF(color, position):
+    global current_measurement, measurements, last_measurement, current_prediction, last_prediction, turn
+    if color != turn:
+        turn = color
+        last_prediction.clear()
+        last_measurement.clear()
+
+    collision.withEdge(color, last_prediction)
 
     x = position[0]
     y = position[1]
@@ -68,16 +78,14 @@ def KF(position):
     last_prediction.appendleft(current_prediction)
     last_measurement.appendleft(current_measurement)
 
-    #display.displayKF(frame, last_measurement, last_prediction)
+    display.displayKF(frame, last_measurement, last_prediction)
 
 kalman = cv2.KalmanFilter(4,2,1)
 kalman.measurementMatrix = np.array([[1,0,0,0],[0,1,0,0]],np.float32)
 kalman.transitionMatrix = np.array([[1,0,1,0],[0,1,0,1],[0,0,1,0],[0,0,0,1]],np.float32)
 kalman.processNoiseCov = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]],np.float32)
 
-
-
-p1 = 'yellow'
+p1 = turn = 'yellow'
 p2 = 'white'
 r = 'red'
 success = False
@@ -86,7 +94,6 @@ score = {'yellow': 0, 'white': 0}
 
 #fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Be sure to use the lower case
 #out = cv2.VideoWriter('/Users/kihunahn/Desktop/storage/' + str(time.time())+'.avi', fourcc, 30.0, (612, 306))
-
 
 start_time = time.time()
 display.setStartTime(start_time)
@@ -106,18 +113,9 @@ ballInfo.findBall(p2, frame)
 
 state = 'End'
 
-'''
-cv2.namedWindow('12')
-cv2.createTrackbar('test', '12', 1, 10, onChange)
-'''
 cv2.namedWindow('frame')
-'''
-display.displayState(frame, p1, state)
-display.displayMove(frame)
-display.displayPath(frame, p1)
-display.displayFPSInfo(frame, time.time(), frame_count)
-display.displayScore(frame, score['yellow'], score['white'])
-'''
+
+cv2.createTrackbar("Ball", 'frame', False, True, onChange)
 cv2.createTrackbar("State", 'frame', False, True, onChange)
 cv2.createTrackbar("Move", 'frame', False, True, onChange)
 cv2.createTrackbar("Path", 'frame', False, True, onChange)
@@ -127,12 +125,13 @@ cv2.createTrackbar("Score", 'frame', False, True, onChange)
 while camera.isOpened():
     ret, img = camera.read()
     img = imutils.resize(img, width=600)
+
+    displayBall = cv2.getTrackbarPos('Ball', 'frame')
     displayState = cv2.getTrackbarPos('State', 'frame')
     displayMove = cv2.getTrackbarPos('Move', 'frame')
     displayPath = cv2.getTrackbarPos('Path', 'frame')
     displayFPS = cv2.getTrackbarPos('FPS', 'frame')
     displayScore = cv2.getTrackbarPos('Score', 'frame')
-
 
     frame_count += 1
 
@@ -141,16 +140,19 @@ while camera.isOpened():
     kernel = np.ones((3,3), np.uint8)
     frame = cv2.morphologyEx(frame, cv2.MORPH_CLOSE, kernel)
 
-    ballInfo.traceBall(r, frame)
-    ballInfo.traceBall(p1, frame)
-    ballInfo.traceBall(p2, frame)
+    ballInfo.traceBall(r, frame, display=displayBall)
+    ballInfo.traceBall(p1, frame, display=displayBall)
+    ballInfo.traceBall(p2, frame, display=displayBall)
 
     cX, cY = ballInfo.queue[p1][0]
-    KF(ballInfo.queue[p1][0])
+    KF(p1, ballInfo.queue[p1][0])
     success = collision.withBall(p1, p2, r, success)
 
+    print(success, state)
     if isStop(ballInfo.move[p1]) and isStop(ballInfo.move[p2]) and isStop(ballInfo.move[r]):
+
         if state == 'Start':
+            #print(success)
             if not success:
                 print('change')
                 temp = p1
