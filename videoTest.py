@@ -21,7 +21,7 @@ videoPath = "/Users/kihunahn/Desktop/videoSrc/"
 fps = ["fps30/", "fps60/"]
 videoList = ["1.avi", "2.avi", "3.avi", "4.avi", "hard1.avi", "hard2.avi", "hard3.avi"]###
 
-videoName = videoPath + fps[0] + videoList[1]
+videoName = videoPath + fps[0] + videoList[6]
 
 camera = cv2.VideoCapture(videoName)
 ret, img = camera.read()

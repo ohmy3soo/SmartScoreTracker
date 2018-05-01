@@ -116,8 +116,14 @@ def withBall(p1, p2, r, success, predict):
         ballInfo.check.remove(p2)
 
     p1_r = getDistance(ballInfo.queue[p1][0], ballInfo.queue[r][0])
+    '''
+    print('-' * 20)
+    print(d_p1_r[1], upper_p1_r * 2.0 / 1.2)
+    print(a2)
+    print(kkk, 2 * ballInfo.radius[p1])
+    '''
     if r not in ballInfo.check and ((p1_r < upper_p1_r)
-                                    or (d_p1_r[1] < upper_p1_r * 2.0 / 1.2 and a2 < 0 and kkk > 2 * ballInfo.radius[p1]) ):
+                                    or (d_p1_r[1] < upper_p1_r * 2.0 / 1.2 and a2 < 0 and kkk > 1.5 * ballInfo.radius[p1]) ):
         ballInfo.join.append(r)
         ballInfo.check.append(r)
         if not success and p2 in ballInfo.join:

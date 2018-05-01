@@ -124,7 +124,8 @@ def traceBall(color, frame, display):
 
         # 공 객체 후보
         if 500 > area > 50:
-
+            if width / height > 3 or height / width > 3:
+                continue
             centerX, centerY = int(centroid[0]), int(centroid[1])
 
             d = getDistance(pre_h, pre_w, centerX, centerY)
@@ -137,6 +138,7 @@ def traceBall(color, frame, display):
     # 찾음
     if update:
         x, y, width, height, area = stats[idx]
+
         #x = int(x - pre_w + queue[color][0][0])
         #y = int(y - pre_h + queue[color][0][1])
         if move[color][0] != -1:
@@ -224,12 +226,11 @@ def findBall(color, frame):
         x, y, w, h, area = stats[pic]
         centerX, centerY = int(centroid[0]), int(centroid[1])
 
-        if 300 > area > 50:
+        if 250 > area > 50:
             if x >= pw/2 and x <= frame.shape[1] - pw/2 and y >= ph/2 and y <= frame.shape[0] - ph/2:
-                if w/h < 1.2 or h/w < 1.2:
+                if w/h < 1.2 and h/w < 1.2:
                     print(color, 'rX: ', (w / 2))
-                    print(color, 'rY: ', (w / 2))
-
+                    print(color, 'rY: ', (h / 2))
                     radius[color] = (w + h) / 4
                     queue[color].appendleft((centerX, centerY))
                     pyr[color].appendleft((2*centerX, 2*centerY))

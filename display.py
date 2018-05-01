@@ -47,7 +47,7 @@ def displayScore(frame, y, w):
 
 def displayPath(frame, p1):
     for i in range(1, len(ballInfo.queue[p1])):
-        cv2.circle(frame, (ballInfo.queue[p1][i][0], ballInfo.queue[p1][i][1]), 1, BGR[p1], thickness=1)
+        #cv2.circle(frame, (ballInfo.queue[p1][i][0], ballInfo.queue[p1][i][1]), 1, BGR[p1], thickness=1)
         cv2.line(frame, (ballInfo.queue[p1][i][0], ballInfo.queue[p1][i][1]),
                  (ballInfo.queue[p1][i - 1][0], ballInfo.queue[p1][i - 1][1]), BGR[p1], 1)
 
