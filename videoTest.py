@@ -23,7 +23,7 @@ videoList = ["1.avi", "2.avi", "3.avi", "4.avi", "hard1.avi", "hard2.avi", "hard
 
 # 가리는 문제 -> 2, 5
 # 정확도 -> 3
-videoName = videoPath + fps[0] + videoList[5]
+videoName = videoPath + fps[0] + videoList[6]
 
 camera = cv2.VideoCapture(videoName)
 ret, img = camera.read()
@@ -123,10 +123,10 @@ while camera.isOpened():
     ballInfo.traceBall(p1, frame, display=displayBall)
     ballInfo.traceBall(p2, frame, display=displayBall)
 
-    cX, cY = ballInfo.queue[p1][0]
     KF(p1, ballInfo.queue[p1][0])
     if len(last_prediction) > 2:
-        success = collision.withBall(p1, p2, r, success, last_prediction[1])
+        success = collision.withBall(p1, p2, success, last_prediction[1], remain=r) \
+                  or collision.withBall(p1, r, success, last_prediction[1], remain=p2)
 
     if isStop(ballInfo.move[p1]) and isStop(ballInfo.move[p2]) and isStop(ballInfo.move[r]):
 
@@ -137,6 +137,8 @@ while camera.isOpened():
                 temp = p1
                 p1 = p2
                 p2 = temp
+                collision.d_p1_p2.clear()
+                collision.d_p1_r.clear()
             else:
                 score[p1] += 1
             state = 'End'

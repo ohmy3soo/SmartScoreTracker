@@ -5,11 +5,12 @@ from collections import deque
 height = width = 0
 pw = ph = 0
 
-
-joinEdge = []
 d_p1_p2 = deque(maxlen=3)
 d_p1_r = deque(maxlen=3)
 
+joinEdge = []
+
+temp = {'p2': False, 'r': False}
 
 def init(w, h, p_w, p_h):
     global width, height, pw, ph
@@ -67,48 +68,57 @@ def withEdge(color, last_prediction):
             joinEdge.remove('R')
 
 
-def withBall(p1, p2, r, success, predict):
-    diff = getDistance(predict, ballInfo.queue[p1][0])
+def withBall(b1, b2, success, predict, remain):
+    global temp, d_p1_r, d_p1_p2
 
-    upper_p1_p2 = (ballInfo.radius[p1] + ballInfo.radius[p2]) * 1.2
-    p1_p2 = getDistance(ballInfo.queue[p1][0], ballInfo.queue[p2][0])
-    d_p1_p2.appendleft(p1_p2)
-    while len(d_p1_p2) < 3:
-        d_p1_p2.appendleft(p1_p2)
-    a1 = (d_p1_p2[1] - d_p1_p2[0]) * (d_p1_p2[2] - d_p1_p2[1])
+    diff = getDistance(predict, ballInfo.queue[b1][0])
 
-    if p2 not in ballInfo.check and ((p1_p2 < upper_p1_p2)
-                                     or (d_p1_p2[1] < upper_p1_p2*2.0/1.2 and a1 < 0 and diff > 2*ballInfo.radius[p1]) ):
-        ballInfo.join.append(p2)
-        ballInfo.check.append(p2)
-        if not success and r in ballInfo.join:
+    limit = (ballInfo.radius[b1] + ballInfo.radius[b2]) * 1.2
+
+    b1_b2 = getDistance(ballInfo.queue[b1][0], ballInfo.queue[b2][0])
+
+    if b2 == 'red':
+        update = d_p1_r
+        o = 'r'
+    else:
+        update = d_p1_p2
+        o = 'p2'
+
+    update.appendleft(b1_b2)
+    while len(update) < 3:
+        update.appendleft(b1_b2)
+
+    a = (update[1] - update[0]) * (update[2] - update[1])
+
+    if b1_b2 < limit and not temp[o] and b2 not in ballInfo.check:
+        temp[o] = True
+        return success
+
+    if b2 not in ballInfo.check and ((temp[o] and not isStop(ballInfo.move[b2]))
+                                     or (update[1] < limit * 2.0 / 1.2 and a < 0 and diff > 1.5 * ballInfo.radius[b1])):
+        ballInfo.join.append(b2)
+        ballInfo.check.append(b2)
+
+        if not success and remain in ballInfo.join:
             if ballInfo.join.count('Edge') >= 3:
                 success = True
                 ballInfo.join = ["GET SCORE!"]
+        if temp[o]:
+            temp[o] = not temp[o]
 
-    elif p2 in ballInfo.check and p1_p2 >= upper_p1_p2:
-        ballInfo.check.remove(p2)
-
-    upper_p1_r = (ballInfo.radius[p1] + ballInfo.radius[r]) * 1.2
-    p1_r = getDistance(ballInfo.queue[p1][0], ballInfo.queue[r][0])
-    d_p1_r.appendleft(p1_r)
-    while len(d_p1_r) < 3:
-        d_p1_r.appendleft(p1_r)
-    a2 = (d_p1_r[1] - d_p1_r[0]) * (d_p1_r[2] - d_p1_r[1])
-    if r not in ballInfo.check and ((p1_r < upper_p1_r)
-                                    or (d_p1_r[1] < upper_p1_r * 2.0 / 1.2 and a2 < 0 and diff > 1.5 * ballInfo.radius[p1]) ):
-        ballInfo.join.append(r)
-        ballInfo.check.append(r)
-        if not success and p2 in ballInfo.join:
-            if ballInfo.join.count('Edge') >= 3:
-                success = True
-                ballInfo.join = ["GET SCORE!"]
-
-    elif r in ballInfo.check and p1_r >= upper_p1_r:
-        ballInfo.check.remove(r)
+    elif b2 in ballInfo.check and b1_b2 >= limit:
+        ballInfo.check.remove(b2)
 
     return success
 
 
 def getDistance(o1, o2):
     return math.sqrt((o1[0]-o2[0])**2 + (o1[1]-o2[1])**2)
+
+
+
+def isStop(moveList):
+    for move in moveList:
+        if move != 0:
+            return False
+    return True

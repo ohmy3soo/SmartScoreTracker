@@ -45,6 +45,7 @@ move = {'red': redM, 'yellow': yellowM, 'white': whiteM}
 queue = {'red': redQ, 'yellow': yellowQ, 'white': whiteQ}
 radius = {'red': redR, 'yellow': yellowR, 'white': whiteR}
 pyr = {'red': redP, 'yellow': yellowP, 'white': whiteP}
+
 width = height = 0
 pw = ph = 0
 
