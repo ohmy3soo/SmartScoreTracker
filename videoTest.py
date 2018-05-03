@@ -19,12 +19,10 @@ BGRcolor = {"red":(0,0,255),
 
 videoPath = "/Users/kihunahn/Desktop/videoSrc/"
 fps = ["fps30/", "fps60/"]
-videoList = ["1.avi", "2.avi", "3.avi", "4.avi", "hard1.avi", "hard2.avi", "hard3.avi"]###
+videoList = ["1.avi", "2.avi", "3.avi", "4.avi", "hard1.avi", "hard2.avi", "hard3.avi",
+             "final1.avi", "final2.avi", "final3.avi"]###
 
-# 가리는 문제 -> 2, 5
-# 정확도 -> 3
-videoName = videoPath + fps[0] + videoList[6]
-
+videoName = videoPath + fps[0] + videoList[-3]
 camera = cv2.VideoCapture(videoName)
 ret, img = camera.read()
 img = imutils.resize(img, width=600)
@@ -53,7 +51,7 @@ def KF(color, position):
         last_measurement.clear()
 
     collision.withEdge(color, last_prediction)
-
+    #print(collision.joinEdge)
     x = position[0]
     y = position[1]
 
@@ -74,8 +72,11 @@ kalman.processNoiseCov = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]],np.f
 last_prediction = deque()
 last_measurement = deque()
 
-#fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Be sure to use the lower case
-#out = cv2.VideoWriter('/Users/kihunahn/Desktop/storage/' + str(time.time())+'.avi', fourcc, 30.0, (612, 306))
+
+#t1 = time.localtime()
+#outputName = '{}{}{}_{}{}{}'.format(t1.tm_year, t1.tm_mon, t1.tm_mday, t1.tm_hour, t1.tm_min, t1.tm_sec)
+fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Be sure to use the lower case
+out = cv2.VideoWriter('/Users/kihunahn/Desktop/' + 'final1.avi' , fourcc, 30.0, (612, 306))
 
 p1 = turn = 'yellow'
 p2 = 'white'
@@ -95,14 +96,15 @@ ballInfo.findBall(p2, frame)
 
 cv2.namedWindow('frame')
 cv2.createTrackbar("Ball", 'frame', False, True, onChange)
-cv2.createTrackbar("State", 'frame', False, True, onChange)
-cv2.createTrackbar("Move", 'frame', False, True, onChange)
-cv2.createTrackbar("Path", 'frame', False, True, onChange)
+cv2.createTrackbar("State", 'frame', True, True, onChange)
+cv2.createTrackbar("Move", 'frame', True, True, onChange)
+cv2.createTrackbar("Path", 'frame', True, True, onChange)
 cv2.createTrackbar("FPS", 'frame', False, True, onChange)
 cv2.createTrackbar("Score", 'frame', False, True, onChange)
 
 while camera.isOpened():
     ret, img = camera.read()
+
     img = imutils.resize(img, width=600)
 
     displayBall = cv2.getTrackbarPos('Ball', 'frame')
@@ -113,6 +115,7 @@ while camera.isOpened():
     displayScore = cv2.getTrackbarPos('Score', 'frame')
 
     frame_count += 1
+    #print(frame_count)
 
     frame = billiardFunction.getWarp(img)
 
@@ -152,10 +155,14 @@ while camera.isOpened():
             ballInfo.queue[p1].clear()
             ballInfo.queue[p1].appendleft(temp_1)
             ballInfo.queue[p1].appendleft(temp_0)
-            #out.release()
-            #fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Be sure to use the lower case
-            #out = cv2.VideoWriter('/Users/kihunahn/Desktop/storage/' + str(time.time()) + '.avi', fourcc, 30.0, (612, 306))
-
+            '''
+            out.release()
+            
+            t1 = time.localtime()
+            outputName = '{}{}{}_{}{}{}'.format(t1.tm_year, t1.tm_mon, t1.tm_mday, t1.tm_hour, t1.tm_min, t1.tm_sec)
+            fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Be sure to use the lower case
+            out = cv2.VideoWriter('/Users/kihunahn/Desktop/storage/' + outputName + '.avi', fourcc, 30.0, (612, 306))
+            '''
     if ballInfo.move[p1][0] > 1.5:
         state = 'Start'
 
@@ -174,10 +181,10 @@ while camera.isOpened():
     cv2.moveWindow('frame', 0, 0)
 
     key = cv2.waitKey(1)
-    #out.write(frame)
+    out.write(frame)
     if key & 0xFF == ord('q'):
         break
 
-#out.release()
+out.release()
 camera.release()
 cv2.destroyAllWindows()

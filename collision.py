@@ -26,10 +26,8 @@ def withEdge(color, last_prediction):
         pre_dy = ballInfo.queue[color][2][1] - ballInfo.queue[color][1][1]
         dy = ballInfo.queue[color][1][1] - ballInfo.queue[color][0][1]
         directionY = pre_dy * dy
-        if pre_dy == dy == 0:
-            directionY = 1
 
-        if directionY <= 0 and last_prediction[0][1] >= height - ph:
+        if directionY <= 0 and pre_dy < 0 and last_prediction[0][1] >= height - ph:
             print('B')
             if 'B' not in joinEdge:
                 joinEdge.append('B')
@@ -37,7 +35,7 @@ def withEdge(color, last_prediction):
         elif 'B' in joinEdge and last_prediction[0][0] < height - ph:
             joinEdge.remove('B')
 
-        if directionY <= 0 and last_prediction[0][1] <= ph:
+        if directionY <= 0 and pre_dy > 0 and last_prediction[0][1] <= ph:
             print('U')
             if 'U' not in joinEdge:
                 joinEdge.append('U')
@@ -48,10 +46,8 @@ def withEdge(color, last_prediction):
         pre_dx = ballInfo.queue[color][2][0] - ballInfo.queue[color][1][0]
         dx = ballInfo.queue[color][1][0] - ballInfo.queue[color][0][0]
         directionX = pre_dx * dx
-        if pre_dx == dx == 0:
-            directionX = 1
 
-        if directionX <= 0 and last_prediction[0][0] <= pw:
+        if directionX <= 0 and pre_dx > 0 and last_prediction[0][0] <= pw:
             print('L')
             if 'L' not in joinEdge:
                 joinEdge.append('L')
@@ -59,7 +55,7 @@ def withEdge(color, last_prediction):
         elif 'L' in joinEdge and last_prediction[0][1] > pw:
             joinEdge.remove('L')
 
-        if directionX <= 0 and last_prediction[0][0] >= width - pw:
+        if directionX <= 0 and pre_dx < 0 and last_prediction[0][0] >= width - pw:
             print('R')
             if 'R' not in joinEdge:
                 joinEdge.append('R')
@@ -94,8 +90,17 @@ def withBall(b1, b2, success, predict, remain):
         temp[o] = True
         return success
 
+    '''
+    if b2 == 'white':
+        print(b1_b2, limit)
+        print(d_p1_p2)
+        print(update[1] , limit * 2.0 / 1.2)
+        print(a)
+        print(diff, 2.0 * ballInfo.radius[b1])
+    '''
     if b2 not in ballInfo.check and ((temp[o] and not isStop(ballInfo.move[b2]))
-                                     or (update[1] < limit * 2.0 / 1.2 and a < 0 and diff > 1.5 * ballInfo.radius[b1])):
+                                     or (update[1] < limit * 2.0 / 1.2 and a < 0 and diff+1 > ballInfo.radius[b1])):
+
         ballInfo.join.append(b2)
         ballInfo.check.append(b2)
 
