@@ -24,6 +24,10 @@ videoList = ["1.avi", "2.avi", "3.avi", "4.avi", "hard1.avi", "hard2.avi", "hard
 
 videoName = videoPath + fps[0] + videoList[-3]
 camera = cv2.VideoCapture(videoName)
+frame_count = 0;
+def onChange(x):
+    pass
+
 ret, img = camera.read()
 img = imutils.resize(img, width=600)
 billiardFunction.setMatrix(img)
@@ -31,7 +35,7 @@ frame = billiardFunction.getWarp(img)
 width = frame.shape[1]
 height = frame.shape[0]
 
-
+'''
 def isStop(moveList):
     for move in moveList:
         if move != 0:
@@ -39,8 +43,7 @@ def isStop(moveList):
     return True
 
 
-def onChange(x):
-    pass
+
 
 
 def KF(color, position):
@@ -84,7 +87,6 @@ r = 'red'
 state = 'End'
 success = False
 score = {'yellow': 0, 'white': 0}
-frame_count = 0;
 
 display.setStartTime(time.time())
 collision.init(width, height, pw, ph)
@@ -93,7 +95,7 @@ ballInfo.init(width, height, pw, ph)
 ballInfo.findBall(r, frame)
 ballInfo.findBall(p1, frame)
 ballInfo.findBall(p2, frame)
-
+'''
 cv2.namedWindow('frame')
 cv2.createTrackbar("Ball", 'frame', False, True, onChange)
 cv2.createTrackbar("State", 'frame', True, True, onChange)
@@ -107,6 +109,9 @@ while camera.isOpened():
 
     img = imutils.resize(img, width=600)
 
+    frame_count += 1
+    # print(frame_count)
+
     displayBall = cv2.getTrackbarPos('Ball', 'frame')
     displayState = cv2.getTrackbarPos('State', 'frame')
     displayMove = cv2.getTrackbarPos('Move', 'frame')
@@ -114,11 +119,8 @@ while camera.isOpened():
     displayFPS = cv2.getTrackbarPos('FPS', 'frame')
     displayScore = cv2.getTrackbarPos('Score', 'frame')
 
-    frame_count += 1
-    #print(frame_count)
-
     frame = billiardFunction.getWarp(img)
-
+    '''
     kernel = np.ones((3,3), np.uint8)
     frame = cv2.morphologyEx(frame, cv2.MORPH_CLOSE, kernel)
 
@@ -155,14 +157,13 @@ while camera.isOpened():
             ballInfo.queue[p1].clear()
             ballInfo.queue[p1].appendleft(temp_1)
             ballInfo.queue[p1].appendleft(temp_0)
-            '''
             out.release()
             
             t1 = time.localtime()
             outputName = '{}{}{}_{}{}{}'.format(t1.tm_year, t1.tm_mon, t1.tm_mday, t1.tm_hour, t1.tm_min, t1.tm_sec)
             fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Be sure to use the lower case
             out = cv2.VideoWriter('/Users/kihunahn/Desktop/storage/' + outputName + '.avi', fourcc, 30.0, (612, 306))
-            '''
+            
     if ballInfo.move[p1][0] > 1.5:
         state = 'Start'
 
@@ -176,15 +177,17 @@ while camera.isOpened():
         display.displayFPSInfo(frame, time.time(), frame_count)
     if displayScore:
         display.displayScore(frame, score['yellow'], score['white'])
-
+    '''
+    if displayFPS:
+        display.displayFPSInfo(frame, time.time(), frame_count)
     cv2.imshow('frame', frame)
     cv2.moveWindow('frame', 0, 0)
 
     key = cv2.waitKey(1)
-    out.write(frame)
+    #out.write(frame)
     if key & 0xFF == ord('q'):
         break
 
-out.release()
+#out.release()
 camera.release()
 cv2.destroyAllWindows()
