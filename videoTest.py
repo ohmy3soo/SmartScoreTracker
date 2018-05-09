@@ -35,7 +35,6 @@ frame = billiardFunction.getWarp(img)
 width = frame.shape[1]
 height = frame.shape[0]
 
-'''
 def isStop(moveList):
     for move in moveList:
         if move != 0:
@@ -95,7 +94,7 @@ ballInfo.init(width, height, pw, ph)
 ballInfo.findBall(r, frame)
 ballInfo.findBall(p1, frame)
 ballInfo.findBall(p2, frame)
-'''
+
 cv2.namedWindow('frame')
 cv2.createTrackbar("Ball", 'frame', False, True, onChange)
 cv2.createTrackbar("State", 'frame', True, True, onChange)
@@ -120,7 +119,7 @@ while camera.isOpened():
     displayScore = cv2.getTrackbarPos('Score', 'frame')
 
     frame = billiardFunction.getWarp(img)
-    '''
+
     kernel = np.ones((3,3), np.uint8)
     frame = cv2.morphologyEx(frame, cv2.MORPH_CLOSE, kernel)
 
@@ -177,7 +176,7 @@ while camera.isOpened():
         display.displayFPSInfo(frame, time.time(), frame_count)
     if displayScore:
         display.displayScore(frame, score['yellow'], score['white'])
-    '''
+
     if displayFPS:
         display.displayFPSInfo(frame, time.time(), frame_count)
     cv2.imshow('frame', frame)
