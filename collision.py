@@ -31,7 +31,7 @@ def withEdge(color, last_prediction):
             print('B')
             if 'B' not in joinEdge:
                 joinEdge.append('B')
-                ballInfo.join.append('Edge')
+                ballInfo.join.append('Edge(B)')
         elif 'B' in joinEdge and last_prediction[0][0] < height - ph:
             joinEdge.remove('B')
 
@@ -39,7 +39,7 @@ def withEdge(color, last_prediction):
             print('U')
             if 'U' not in joinEdge:
                 joinEdge.append('U')
-                ballInfo.join.append('Edge')
+                ballInfo.join.append('Edge(U)')
         elif 'U' in joinEdge and last_prediction[0][1] > ph:
             joinEdge.remove('U')
 
@@ -51,7 +51,7 @@ def withEdge(color, last_prediction):
             print('L')
             if 'L' not in joinEdge:
                 joinEdge.append('L')
-                ballInfo.join.append('Edge')
+                ballInfo.join.append('Edge(L)')
         elif 'L' in joinEdge and last_prediction[0][1] > pw:
             joinEdge.remove('L')
 
@@ -59,7 +59,7 @@ def withEdge(color, last_prediction):
             print('R')
             if 'R' not in joinEdge:
                 joinEdge.append('R')
-                ballInfo.join.append('Edge')
+                ballInfo.join.append('Edge(R)')
         elif 'R' in joinEdge and last_prediction[0][1] < width - pw:
             joinEdge.remove('R')
 

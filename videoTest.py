@@ -19,10 +19,11 @@ BGRcolor = {"red":(0,0,255),
 
 videoPath = "/Users/kihunahn/Desktop/videoSrc/"
 fps = ["fps30/", "fps60/"]
-videoList = ["1.avi", "2.avi", "3.avi", "4.avi", "hard1.avi", "hard2.avi", "hard3.avi",
-             "final1.avi", "final2.avi", "final3.avi"]###
+#videoList = ["1.avi", "2.avi", "3.avi", "4.avi", "hard1.avi", "hard2.avi", "hard3.avi",
+#             "final1.avi", "final2.avi", "final3.avi"]###
 
-videoName = videoPath + fps[0] + videoList[-3]
+#videoName = videoPath + fps[0] + videoList[-3]
+videoName = videoPath + "itg02.mp4"
 camera = cv2.VideoCapture(videoName)
 frame_count = 0;
 def onChange(x):
@@ -77,8 +78,8 @@ last_measurement = deque()
 
 #t1 = time.localtime()
 #outputName = '{}{}{}_{}{}{}'.format(t1.tm_year, t1.tm_mon, t1.tm_mday, t1.tm_hour, t1.tm_min, t1.tm_sec)
-fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Be sure to use the lower case
-out = cv2.VideoWriter('/Users/kihunahn/Desktop/' + 'final1.avi' , fourcc, 30.0, (612, 306))
+#fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Be sure to use the lower case
+#out = cv2.VideoWriter('/Users/kihunahn/Desktop/' + 'final1.avi' , fourcc, 30.0, (612, 306))
 
 p1 = turn = 'yellow'
 p2 = 'white'
@@ -96,7 +97,7 @@ ballInfo.findBall(p1, frame)
 ballInfo.findBall(p2, frame)
 
 cv2.namedWindow('frame')
-cv2.createTrackbar("Ball", 'frame', False, True, onChange)
+cv2.createTrackbar("Ball", 'frame', True, True, onChange)
 cv2.createTrackbar("State", 'frame', True, True, onChange)
 cv2.createTrackbar("Move", 'frame', True, True, onChange)
 cv2.createTrackbar("Path", 'frame', True, True, onChange)
@@ -156,12 +157,12 @@ while camera.isOpened():
             ballInfo.queue[p1].clear()
             ballInfo.queue[p1].appendleft(temp_1)
             ballInfo.queue[p1].appendleft(temp_0)
-            out.release()
+            #out.release()
             
             t1 = time.localtime()
-            outputName = '{}{}{}_{}{}{}'.format(t1.tm_year, t1.tm_mon, t1.tm_mday, t1.tm_hour, t1.tm_min, t1.tm_sec)
-            fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Be sure to use the lower case
-            out = cv2.VideoWriter('/Users/kihunahn/Desktop/storage/' + outputName + '.avi', fourcc, 30.0, (612, 306))
+            #outputName = '{}{}{}_{}{}{}'.format(t1.tm_year, t1.tm_mon, t1.tm_mday, t1.tm_hour, t1.tm_min, t1.tm_sec)
+            #fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Be sure to use the lower case
+            #out = cv2.VideoWriter('/Users/kihunahn/Desktop/storage/' + outputName + '.avi', fourcc, 30.0, (612, 306))
             
     if ballInfo.move[p1][0] > 1.5:
         state = 'Start'
