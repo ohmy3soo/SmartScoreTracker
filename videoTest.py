@@ -19,11 +19,23 @@ BGRcolor = {"red":(0,0,255),
 
 videoPath = "/Users/kihunahn/Desktop/videoSrc/"
 fps = ["fps30/", "fps60/"]
-#videoList = ["1.avi", "2.avi", "3.avi", "4.avi", "hard1.avi", "hard2.avi", "hard3.avi",
-#             "final1.avi", "final2.avi", "final3.avi"]###
+videoList = ["1.avi", "2.avi", "3.avi", "4.avi", "hard1.avi", "hard2.avi", "hard3.avi",
+             "final1.avi", "final2.avi", "final3.avi", "edit2.mp4"]###
 
-#videoName = videoPath + fps[0] + videoList[-3]
-videoName = videoPath + "itg02.mp4"
+# 0 3연샷
+# 1 둘 다 실패
+# 2 팔에 공이 가리는 상황
+# 3 아슬아슬
+# 4 바로 앞에서 세게 맞는 상황
+# 5 팔에 가리고 아슬아슬
+# 6 바로 앞에서 맞고 아슬아슬
+# 7 벽에서 아슬아슬
+# 8 엄청 세게 맞고 아슬아슬
+# 9 구석에서 아슬아슬
+
+videoNum = videoList[0]
+#videoName = videoPath + videoNum
+videoName = videoPath + fps[0] + videoNum
 camera = cv2.VideoCapture(videoName)
 frame_count = 0;
 def onChange(x):
@@ -79,7 +91,7 @@ last_measurement = deque()
 #t1 = time.localtime()
 #outputName = '{}{}{}_{}{}{}'.format(t1.tm_year, t1.tm_mon, t1.tm_mday, t1.tm_hour, t1.tm_min, t1.tm_sec)
 #fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Be sure to use the lower case
-#out = cv2.VideoWriter('/Users/kihunahn/Desktop/' + 'final1.avi' , fourcc, 30.0, (612, 306))
+#out = cv2.VideoWriter('/Users/kihunahn/Desktop/storage/' + videoName , fourcc, 30.0, (612, 306))
 
 p1 = turn = 'yellow'
 p2 = 'white'
@@ -110,7 +122,10 @@ while camera.isOpened():
     img = imutils.resize(img, width=600)
 
     frame_count += 1
-    # print(frame_count)
+    #print(frame_count)
+    #if frame_count == 236:
+    #    break
+
 
     displayBall = cv2.getTrackbarPos('Ball', 'frame')
     displayState = cv2.getTrackbarPos('State', 'frame')
@@ -159,7 +174,7 @@ while camera.isOpened():
             ballInfo.queue[p1].appendleft(temp_0)
             #out.release()
             
-            t1 = time.localtime()
+            #t1 = time.localtime()
             #outputName = '{}{}{}_{}{}{}'.format(t1.tm_year, t1.tm_mon, t1.tm_mday, t1.tm_hour, t1.tm_min, t1.tm_sec)
             #fourcc = cv2.VideoWriter_fourcc(*'MJPG')  # Be sure to use the lower case
             #out = cv2.VideoWriter('/Users/kihunahn/Desktop/storage/' + outputName + '.avi', fourcc, 30.0, (612, 306))
@@ -178,8 +193,6 @@ while camera.isOpened():
     if displayScore:
         display.displayScore(frame, score['yellow'], score['white'])
 
-    if displayFPS:
-        display.displayFPSInfo(frame, time.time(), frame_count)
     cv2.imshow('frame', frame)
     cv2.moveWindow('frame', 0, 0)
 

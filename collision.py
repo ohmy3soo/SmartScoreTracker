@@ -105,7 +105,10 @@ def withBall(b1, b2, success, predict, remain):
         ballInfo.check.append(b2)
 
         if not success and remain in ballInfo.join:
-            if ballInfo.join.count('Edge') >= 3:
+            if ballInfo.join.count('Edge(L)') \
+                    + ballInfo.join.count('Edge(R)') \
+                    + ballInfo.join.count('Edge(B)') \
+                    + ballInfo.join.count('Edge(U)') >= 3:
                 success = True
                 ballInfo.join = ["GET SCORE!"]
         if temp[o]:

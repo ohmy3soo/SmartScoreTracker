@@ -39,7 +39,7 @@ whiteP = deque()
 yellowP = deque()
 redP = deque()
 
-ROI_SIZE = 4
+ROI_SIZE = 8
 
 move = {'red': redM, 'yellow': yellowM, 'white': whiteM}
 queue = {'red': redQ, 'yellow': yellowQ, 'white': whiteQ}
@@ -103,7 +103,7 @@ def traceBall(color, frame, display):
         w2 = min(int(queue[color][0][0] + ROI_SIZE * radius[color]), colorImage.shape[1])
 
         colorImage = colorImage[h1: h2, w1: w2]
-
+    '''
     if color == 'yellow':
         cv2.imshow("ROI_" + color, colorImage)
         cv2.moveWindow("ROI_"+color, 612, 0)
@@ -113,7 +113,7 @@ def traceBall(color, frame, display):
     if color == 'red':
         cv2.imshow("ROI_" + color, colorImage)
         cv2.moveWindow("ROI_"+color, 612, 360)
-
+    '''
     numOfLabels, img_label, stats, centroids \
         = cv2.connectedComponentsWithStats(colorImage)
 
